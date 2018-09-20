@@ -1,3 +1,7 @@
 obj/*.*
 bin/*.*
 Configuration/*.*
+/bin/JIRA/Configuration/settings.xml
+/bin/JIRA/Configuration/settings.txt
+/obj/JIRA
+/bin/JIRA

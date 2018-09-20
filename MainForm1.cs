@@ -384,14 +384,20 @@ namespace JIRAFolderOpener
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-            notifyIcon1.BalloonTipTitle = "Minimize to Tray App";
-            notifyIcon1.BalloonTipText = "Form Minimized.";
+            FireIconNotification(this.WindowState, "Minimize to Tray App", "Form Minimized");
+        }
+
+        // to be used by other operations
+        private void FireIconNotification(FormWindowState state, string titleMsg, string textmsg)
+        {
+            notifyIcon1.BalloonTipTitle = titleMsg;
+            notifyIcon1.BalloonTipText = textmsg;
 
             if (FormWindowState.Minimized == this.WindowState)
             {
                 notifyIcon1.Visible = true;
                 notifyIcon1.ShowBalloonTip(1000);
-                this.Hide();  
+                this.Hide();
             }
             else if (FormWindowState.Normal == this.WindowState)
             {

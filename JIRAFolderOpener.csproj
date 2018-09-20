@@ -88,6 +88,7 @@
     <Reference Include="UIAutomationTypes" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DirectoryWatcher.cs" />
     <Compile Include="JIRAParameters.cs" />
     <Compile Include="FileList.cs" />
     <Compile Include="FileOperator.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="URLExtractor.cs" />
+    <Compile Include="YLog.cs" />
     <EmbeddedResource Include="FilePicker.resx">
       <DependentUpon>FilePicker.cs</DependentUpon>
     </EmbeddedResource>
@@ -157,6 +159,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>COPY $(TargetPath) C:\Bin\
+XCOPY $(TargetDir)\Configuration\*.* C:\Bin\Configuration\</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
