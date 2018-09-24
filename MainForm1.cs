@@ -80,6 +80,11 @@ namespace JIRAFolderOpener
             // loads everything on startup
             FTPParameters.LoadServerInfoFromFile();
 
+
+            //TODO: Testing watcher function
+            DirectoryWatcher watcher = new DirectoryWatcher("C:\\Enabler\\log");
+            watcher.EnableWatcher = true;
+
         }
 
         #region HotKey Register and Function

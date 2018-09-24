@@ -19,12 +19,15 @@ namespace JIRAFolderOpener
 
         string _dirPath;
 
+        const string subFolderPrefix = "J_";
+
         /*
         https://social.msdn.microsoft.com/Forums/vstudio/en-US/94b4e59b-33d2-4230-873c-eaea680c973d/get-changed-text-using-filesystemwatcher?forum=csharpgeneral
 
-    */
+        */
 
-        Dictionary<string, int> _filesLastWriteTime;
+        Dictionary<FileInfo, long> watchFiles;
+        //List<FileInfo> watchFiles;
 
         /// <summary>
         /// Enable or disable the watcher
@@ -54,17 +57,13 @@ namespace JIRAFolderOpener
             }
         }
         FileSystemWatcher watcher;
-        protected DirectoryWatcher(string dirPath)
+        internal DirectoryWatcher(string dirPath)
         {
             _dirPath = dirPath;
-        }
+            watchFiles = new Dictionary<FileInfo, long>();
 
-        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
-        protected void StartWater()
-        {
             if (!Directory.Exists(_dirPath))
                 return;
-            _filesLastWriteTime = new Dictionary<string, int>();
 
             watcher = new FileSystemWatcher(_dirPath);
             watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
@@ -72,10 +71,22 @@ namespace JIRAFolderOpener
             watcher.Created += Watcher_Created;
             watcher.Renamed += Watcher_Renamed;
             watcher.Deleted += Watcher_Deleted;
+        }
 
-            string[] files = Directory.GetFiles(_dirPath);
+        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
+        protected void StartWater()
+        {
+          
+            DirectoryInfo directoryInfo = new DirectoryInfo(_dirPath);
 
-            foreach(File f in )
+            FileInfo[] files = directoryInfo.GetFiles("*.*", SearchOption.AllDirectories);
+
+            foreach(FileInfo f in files)
+            {
+                // add all files into the directory
+                watchFiles.Add(f, f.Length);
+                Console.WriteLine("Adding file {0} (length:{1}) to list.", f.Name, f.Length);
+            }
 
             watcher.EnableRaisingEvents = true;
         }
@@ -98,6 +109,33 @@ namespace JIRAFolderOpener
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
             Console.WriteLine("File {0} changed", e.Name);
+            // search the directory for the file and compare the last write time 
+            FileInfo modifiedFile = new FileInfo(Path.Combine(_dirPath, e.Name));
+            KeyValuePair<FileInfo, long> TempFile = watchFiles.FirstOrDefault(f => f.Key.Name == e.Name);
+            if(TempFile.Equals(default(KeyValuePair<FileInfo, long>)))
+            {
+                return;
+            }
+
+            // output the new added data
+            using (FileStream fstream = new FileStream(Path.Combine(_dirPath, e.Name), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                fstream.Position = TempFile.Key.Length;
+                using (StreamReader reader = new StreamReader(fstream))
+                {
+                    string newString = reader.ReadToEnd();
+                    Console.Write(newString);
+                    // create a temp file in a different folder, and write the new strings in
+                    using (FileStream wfStream = new FileStream(Path.Combine(_dirPath, subFolderPrefix + e.Name), FileMode.Append, FileAccess.Write, FileShare.None))
+                    {
+                        using (StreamWriter write = new StreamWriter(wfStream))
+                        {
+                            write.Write(newString);
+                            write.Flush();
+                        }
+                    }
+                }
+            }
         }
 
         private void RaiseNotification(string message)
