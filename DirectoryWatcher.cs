@@ -19,6 +19,8 @@ namespace JIRAFolderOpener
 
         string _dirPath;
 
+        const string decodedDirectory = "JIRA";
+
         const string subFolderPrefix = "J_";
 
         /*
@@ -65,6 +67,12 @@ namespace JIRAFolderOpener
             if (!Directory.Exists(_dirPath))
                 return;
 
+            // create decode folder
+            if(!Directory.Exists(Path.Combine(_dirPath, decodedDirectory)))
+            {
+                Directory.CreateDirectory(Path.Combine(_dirPath, decodedDirectory));
+            }
+
             watcher = new FileSystemWatcher(_dirPath);
             watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
             watcher.Changed += Watcher_Changed;
@@ -79,7 +87,7 @@ namespace JIRAFolderOpener
           
             DirectoryInfo directoryInfo = new DirectoryInfo(_dirPath);
 
-            FileInfo[] files = directoryInfo.GetFiles("*.*", SearchOption.AllDirectories);
+            FileInfo[] files = directoryInfo.GetFiles("*.*", SearchOption.TopDirectoryOnly);
 
             foreach(FileInfo f in files)
             {
@@ -124,13 +132,13 @@ namespace JIRAFolderOpener
                 using (StreamReader reader = new StreamReader(fstream))
                 {
                     string newString = reader.ReadToEnd();
-                    Console.Write(newString);
+                    
                     // create a temp file in a different folder, and write the new strings in
-                    using (FileStream wfStream = new FileStream(Path.Combine(_dirPath, subFolderPrefix + e.Name), FileMode.Append, FileAccess.Write, FileShare.None))
+                    using (FileStream wfStream = new FileStream(Path.Combine(Path.Combine(_dirPath, decodedDirectory), subFolderPrefix + e.Name), FileMode.Append, FileAccess.Write, FileShare.None))
                     {
                         using (StreamWriter write = new StreamWriter(wfStream))
                         {
-                            write.Write(newString);
+                            write.Write(Decrypo.DecrypoData(newString));
                             write.Flush();
                         }
                     }
@@ -148,6 +156,9 @@ namespace JIRAFolderOpener
     // Once a change event is fired, get the file and decode it, then write it into a new file Loop1.log => J_Loop1.log
     internal static class Decrypo
     {
-
+        internal static string DecrypoData(string data)
+        {
+            return data;
+        }
     }
 }
