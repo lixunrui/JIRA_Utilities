@@ -49,12 +49,9 @@
   <PropertyGroup>
     <ApplicationIcon>jira.ico</ApplicationIcon>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'C++ Debug|AnyCPU'">
-    <OutputPath>bin\C++ Debug\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'PowerDebug|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'JIRA|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\PowerDebug\</OutputPath>
+    <OutputPath>bin\JIRA\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -62,10 +59,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'JIRA|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_Test|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\JIRA\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>bin\Debug_Test\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;TEST</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -88,22 +85,34 @@
     <Reference Include="UIAutomationTypes" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\FileManager.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\FileManager.Designer.cs">
+      <DependentUpon>FileManager.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\MeterCheckForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\MeterCheckForm.Designer.cs">
+      <DependentUpon>MeterCheckForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="DirectoryWatcher.cs" />
     <Compile Include="JIRAParameters.cs" />
     <Compile Include="FileList.cs" />
     <Compile Include="FileOperator.cs" />
-    <Compile Include="FilePicker.cs">
+    <Compile Include="Forms\FilePicker.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FilePicker.Designer.cs">
+    <Compile Include="Forms\FilePicker.Designer.cs">
       <DependentUpon>FilePicker.cs</DependentUpon>
     </Compile>
     <Compile Include="FTPClient.cs" />
     <Compile Include="HotKeyController.cs" />
-    <Compile Include="MainForm1.cs">
+    <Compile Include="Forms\MainForm1.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainForm1.Designer.cs">
+    <Compile Include="Forms\MainForm1.Designer.cs">
       <DependentUpon>MainForm1.cs</DependentUpon>
     </Compile>
     <Compile Include="KeyHandler.cs" />
@@ -111,10 +120,16 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="URLExtractor.cs" />
     <Compile Include="YLog.cs" />
-    <EmbeddedResource Include="FilePicker.resx">
+    <EmbeddedResource Include="Forms\FileManager.resx">
+      <DependentUpon>FileManager.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\MeterCheckForm.resx">
+      <DependentUpon>MeterCheckForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Forms\FilePicker.resx">
       <DependentUpon>FilePicker.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainForm1.resx">
+    <EmbeddedResource Include="Forms\MainForm1.resx">
       <DependentUpon>MainForm1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">

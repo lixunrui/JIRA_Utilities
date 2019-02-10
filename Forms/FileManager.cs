@@ -14,30 +14,37 @@ using System.Threading;
 
 namespace JIRAFolderOpener
 {
-    public partial class FilePicker : Form
+    public partial class FileManager : Form
     {  
        // const string decodeMiddlePaht = @"Enabler\Log"; // Folder\ITLXXXX\Enabler\Log
        // List<string> fileList;
         FileList<string> fileList;
+        FileList<string> filesToMerge;
         string targetFolder;
         AutoResetEvent resetEvent = new AutoResetEvent(false);
         bool isServerFolderOpen = true;
         bool openWithEditor = false;
+        bool canMergeFiles = false;
+        YLog log;
 
-      //  Boolean localFolder = false;
-        //  System.ComponentModel.BackgroundWorker backgroundWorker;
- 
-        // FileOperator fileOperator;
+        const int NAME_INDEX = 0;
+        const int LAST_WRITE_INDEX = 1;
+        const int FILE_SIZE_INDEX = 2;
+        const int FULL_PATH_INDEX = 3;
 
-        public FilePicker(string folder)//, FileOperator fileOperator)
+        public FileManager(string folder, YLog log)
         {
             InitializeComponent();
             InitComponents();
             this.CenterToScreen();
+            this.log = log;
             this.targetFolder = folder;
             this.Text = folder;
             fileList = new FileList<string>();
             fileList.OnFileChange += fileList_OnFileChange;
+
+            filesToMerge = new FileList<string>();
+
             LoadFileList(LocalFilePath.SourceFilePath);
            // FTPParameters.LoadServerInfoFromFile();
             FileOperator.OperationEvent += FileOperator_OperationEvent;
@@ -46,10 +53,10 @@ namespace JIRAFolderOpener
         // Init default text
         private void InitComponents()
         {
-            groupBoxFolder.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Server;
-            this.toolTips.SetToolTip(btnStart, JIRAFolderOpener.Properties.Resources.Txt_Btn_Start_Tooltip);
-            this.toolTips.SetToolTip(ckbUnzip, JIRAFolderOpener.Properties.Resources.Txt_Unzip);
-            this.toolTips.SetToolTip(ckbDecode, JIRAFolderOpener.Properties.Resources.Txt_Decode);
+            groupBoxFolder.Text = Properties.Resources.Txt_Switch_Server;
+            this.toolTips.SetToolTip(btnStart, Properties.Resources.Txt_Btn_Start_Tooltip);
+            this.toolTips.SetToolTip(ckbUnzip, Properties.Resources.Txt_Unzip);
+            this.toolTips.SetToolTip(ckbDecode, Properties.Resources.Txt_Decode);
             fileList_OnFileChange(0, false);
             if(isServerFolderOpen)
             {
@@ -63,12 +70,12 @@ namespace JIRAFolderOpener
             if (fileCount == 0)
             {
                 ckbDecode.Enabled = false;
-                UpdateSelectedFileCount(JIRAFolderOpener.Properties.Resources.Txt_File_No_File);
+                UpdateSelectedFileCount(Properties.Resources.Txt_File_No_File);
             }
             else
             {
                 ckbDecode.Enabled = true;
-                UpdateSelectedFileCount(String.Format(JIRAFolderOpener.Properties.Resources.Txt_File_Count, fileCount));
+                UpdateSelectedFileCount(String.Format(Properties.Resources.Txt_File_Count, fileCount));
             }
 
             if (!hasZipFile)
@@ -101,14 +108,12 @@ namespace JIRAFolderOpener
 
         void UpdateSelectedFileCount(string message)
         {
-           // this.BeginInvoke(new Action(() =>
-            //{
-                lblFileCount.Text = message;
-           // }));
+            lblFileCount.Text = message;
         }
 
         void UpdateActivityMessage(string message)
         {
+            log.WriteLine(message);
             this.BeginInvoke(new Action(() =>
             {
                 richtxtActivity.Text += message + "\n";
@@ -119,31 +124,42 @@ namespace JIRAFolderOpener
         void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             backgroundWorker.ReportProgress(0, "Start");
-            foreach (string fileName in fileList)
+
+            if(canMergeFiles)
             {
-                if (isServerFolderOpen)
-                {
-                    string destFile = Path.Combine(targetFolder, fileName); // \\appserv\EP\EP-XXX\Enabler.XXX
-                    string sourceFile = Path.Combine(LocalFilePath.SourceFilePath, fileName); // \\appserv\incoming\ENabler.XXX or \\appserv\Logs\EX-####
-                    Console.WriteLine("Done copy");
+                // Merge selected files into one
 
-                    System.IO.File.Copy(sourceFile, destFile, true);
-                    Console.WriteLine("File {0} Copied", fileName);
-                    UpdateActivityMessage(String.Format("File {0} Copied", fileName));
-                }
+            }
+            else // unzip and decode log files
+            {
+                foreach (string fileName in fileList)
+                {
+                    if (isServerFolderOpen)
+                    {
+                        FileInfo tempFileInfo = new FileInfo(fileName);
+                        string destFile = Path.Combine(targetFolder, tempFileInfo.Name); // \\appserv\EP\EP-XXX\Enabler.XXX
+                        string sourceFile = Path.Combine(LocalFilePath.SourceFilePath, fileName); // \\appserv\incoming\ENabler.XXX or \\appserv\Logs\EX-####
+                        Console.WriteLine("Done copy");
 
-                if (ckbUnzip.Checked)
-                {
-                    FileOperator.UnZipFile(targetFolder, fileName);
-                }
-                
-                // check whether we need to decode
-                if (ckbDecode.Checked)
-                {
-                    Console.WriteLine("Need to decode the file");
-                    FileOperator.DecodeFiles(Path.Combine(targetFolder, Path.GetFileNameWithoutExtension(fileName)));
+                        System.IO.File.Copy(tempFileInfo.FullName, destFile, true);
+                        Console.WriteLine("File {0} Copied", fileName);
+                        UpdateActivityMessage(String.Format("File {0} Copied", fileName));
+                    }
+
+                    if (ckbUnzip.Checked)
+                    {
+                        FileOperator.UnZipFile(targetFolder, fileName);
+                    }
+
+                    // check whether we need to decode
+                    if (ckbDecode.Checked)
+                    {
+                        Console.WriteLine("Need to decode the file");
+                        FileOperator.DecodeFiles(Path.Combine(targetFolder, Path.GetFileNameWithoutExtension(fileName)));
+                    }
                 }
             }
+            
             //resetEvent.Set();
             backgroundWorker.ReportProgress(100);
         }
@@ -187,11 +203,14 @@ namespace JIRAFolderOpener
 
         void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            dataViewRemote.Enabled = true;
+            statusProgress.Value = 100;
+            tvFileView.Enabled = true;
             btnStart.Enabled = true;
             btnCancel.Enabled = true;
             ckbDecode.Enabled = true;
+            ckbDecode.Checked = false;
             ckbUnzip.Enabled = true;
+            ckbUnzip.Checked = false;
             UpdateActivityMessage("Done");
             if (openWithEditor)// open the folder
             {
@@ -202,81 +221,45 @@ namespace JIRAFolderOpener
 
         #region Create UI Table
         // Load Remote folder files
-        private void LoadFileList(string folderPath)
+        private void LoadFileList(string folderPath, string fileType="*")
         {
-            // int: ID, string: name
-            fileList.Clear();
-            // latest one comes first
-            List<FileInfo> sortedFileList = new DirectoryInfo(folderPath).GetFiles().OrderByDescending(f => f.LastWriteTime).ToList();
-
-            CreateDataTableGrid(sortedFileList);
-
-            Console.WriteLine("Count {0}", sortedFileList.Count);
+            tvFileView.Nodes.Clear();
+            DirectoryInfo dirInfo = new DirectoryInfo(folderPath);
+            TreeNode treeNode = tvFileView.Nodes.Add(dirInfo.Name);
+            treeNode.Tag = dirInfo.FullName;
+            treeNode.StateImageIndex = 0;
+            tvFileView.CheckBoxes = true;
+            
+            // load files
+            LoadFiles(folderPath, treeNode, fileType);
+            LoadSubDirectories(folderPath, treeNode, fileType);
         }
 
-        private void CreateDataTableGrid(List<FileInfo> sortedFileList)
+        private void LoadFiles(string dir, TreeNode treeNode, string fileType)
         {
-            dataViewRemote.Columns.Clear();
-            dataViewRemote.DataSource = null;
+            string[] files = Directory.GetFiles(dir, fileType);
 
-            if (sortedFileList.Count == 0)
+            foreach(string file in files)
             {
-                return;
+                FileInfo fileInfo = new FileInfo(file);
+                TreeNode newNode = treeNode.Nodes.Add(fileInfo.Name);
+                newNode.Tag = fileInfo.FullName;
+                newNode.StateImageIndex = 1;
             }
+        }
 
-            DataGridViewCheckBoxColumn chk = new DataGridViewCheckBoxColumn();
-            dataViewRemote.Columns.Add(chk);
-            chk.Width = 10;
-            chk.HeaderText = "Select";
-            chk.Name = "chk";
-            chk.FillWeight = 20;
-            chk.Selected = false;
-
-            DataTable dt = new DataTable();
-            //dt.Columns.Add(chk);
-
-            DataColumn fileNameCol = new DataColumn("File Name");
-
-            dt.Columns.Add("File Name");
-            dt.Columns.Add("Last Write Time");
-            dt.Columns.Add("Size");
-
-            foreach (FileInfo f in sortedFileList)
+        private void LoadSubDirectories(string subFolderPath, TreeNode treeNode, string fileType)
+        {
+            string[] subDirectoryEntries = Directory.GetDirectories(subFolderPath);
+            foreach(string subDirectory in subDirectoryEntries)
             {
-                DataRow dr = dt.NewRow();
-                dr[0] = f.Name;
-                dr[1] = f.LastWriteTime;
-                dr[2] = String.Format("{0:0.0#} KB", (f.Length / 1024));
-                dt.Rows.Add(dr);
-                Console.WriteLine("Adding {0}", f.Name);
+                DirectoryInfo dirInfo = new DirectoryInfo(subDirectory);
+                TreeNode newNode = treeNode.Nodes.Add(dirInfo.Name);
+                newNode.StateImageIndex = 0;
+                newNode.Tag = dirInfo.FullName;
+                LoadFiles(subDirectory, newNode, fileType);
+                LoadSubDirectories(subDirectory, newNode, fileType);
             }
-            //view.DataSource = dt;
-            
-            dataViewRemote.AutoGenerateColumns = false;
-            dataViewRemote.AllowUserToResizeColumns = false;
-            dataViewRemote.AllowUserToResizeRows = false;
-            dataViewRemote.AllowUserToOrderColumns = false;
-            dataViewRemote.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
-            
-            DataGridViewTextBoxColumn  NameColumn = new DataGridViewTextBoxColumn ();
-            NameColumn.HeaderText = "Name";
-            NameColumn.FillWeight = 100;
-            NameColumn.DataPropertyName = "File Name";
-            dataViewRemote.Columns.Add(NameColumn);
-
-            DataGridViewTextBoxColumn LastWriteTimeColumn = new DataGridViewTextBoxColumn();
-            LastWriteTimeColumn.HeaderText = "Last Write Time";
-            LastWriteTimeColumn.FillWeight = 40;
-            LastWriteTimeColumn.DataPropertyName = "Last Write Time";
-            dataViewRemote.Columns.Add(LastWriteTimeColumn);
-
-            DataGridViewTextBoxColumn LengthColumn = new DataGridViewTextBoxColumn();
-            LengthColumn.HeaderText = "Size";
-            LengthColumn.FillWeight = 30;
-            LengthColumn.DataPropertyName = "Size";
-            dataViewRemote.Columns.Add(LengthColumn);
-
-            dataViewRemote.DataSource = dt;
         }
         #endregion
 
@@ -294,11 +277,11 @@ namespace JIRAFolderOpener
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             //richtxtActivity.Text += JIRAFolderOpener.Properties.Resources.Txt_File_Refreshing + "\n";
-            dataViewRemote.DataSource = null;
+            //dataViewRemote.DataSource = null;
             if (isServerFolderOpen)
             {
                 Task RefreshServer = RefreshServerAndDownload();
-
+                
                 RefreshServer.ContinueWith((task) => 
                 {
                     if(task.IsCompleted && !task.IsCanceled && !task.IsFaulted)
@@ -352,14 +335,16 @@ namespace JIRAFolderOpener
         // Copy & Unzip
         private void btnStart_Click(object sender, EventArgs e)
         {
+            if (backgroundWorker.IsBusy)
+                backgroundWorker.CancelAsync();
             richtxtActivity.Text = "";
             backgroundWorker.RunWorkerAsync();
-           // resetEvent.WaitOne();
-            dataViewRemote.Enabled = false;
+            // resetEvent.WaitOne();
+            //dataViewRemote.Enabled = false;
             btnStart.Enabled = false;
             btnCancel.Enabled = false;
             ckbDecode.Enabled = false;
-            ckbUnzip.Enabled = false;
+            ckbUnzip.Enabled = false;   
         }
 
         private void btnSwitch_Click(object sender, EventArgs e)
@@ -383,7 +368,15 @@ namespace JIRAFolderOpener
                 isServerFolderOpen = false;
             }
             btnRestore.Visible = !isServerFolderOpen;
-            btnRestore.Enabled = !isServerFolderOpen;
+            btnRestore.Enabled = false; // !isServerFolderOpen;
+        }
+
+        private void btnMergeFiles_Click(object sender, EventArgs e)
+        {
+            // Reload folder
+            LoadFileList(targetFolder, "*.log");
+            canMergeFiles = true;
+            
         }
 
         private void setDefaultEditorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -411,79 +404,35 @@ namespace JIRAFolderOpener
         #region Data View Remote
         private void AddorRemoveItem(string fileName)
         {
-            if (fileList.Find(file => file.Equals(fileName)) != null)
+            FileList<string> tempFileList;
+            if(canMergeFiles)
+            {
+                tempFileList = filesToMerge;
+            }
+            else
+            {
+                tempFileList = fileList;
+            }
+
+            if (tempFileList.Find(file => file.Equals(fileName)) != null)
             {
                 Console.WriteLine("Remove from the list {0}", fileName);
-                fileList.Remove(fileName);
+                tempFileList.Remove(fileName);
             }
             else
             {
                 Console.WriteLine("Add into the list {0}", fileName);
-                fileList.Add(fileName);
+                tempFileList.Add(fileName);
             }
         }
 
-        private void dataView_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void tvFileView_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            try
-            {
-                if (dataViewRemote.CurrentCell is DataGridViewCheckBoxCell)
-                {
-                    int row = e.RowIndex;
-                    if (row >= 0)
-                    {
-                        // check the checkbox value
-                        string s = dataViewRemote.Rows[row].Cells[1].Value.ToString();
-                        if (dataViewRemote.Rows[row].Cells[0].Value != null)
-                        {
-                            if ((bool)dataViewRemote.Rows[row].Cells[0].Value == false)
-                            {
-                                dataViewRemote.Rows[row].Cells[0].Value = true;
-                                Console.WriteLine("Add {0}", s);
-                                AddorRemoveItem(s);
-                            }
-                            else
-                            {
-                                dataViewRemote.Rows[row].Cells[0].Value = false;
-                                Console.WriteLine("remove {0}", s);
-                                AddorRemoveItem(s);
-                            }
-                        }
-                        else
-                        {
-                            dataViewRemote.Rows[row].Cells[0].Value = true;
-                            Console.WriteLine("Add {0} ---- null cell", s);
-                            AddorRemoveItem(s);
-                        }
-                    }
-                }
-                Console.WriteLine("not a check box");
-            }
-            catch (System.Exception ex)
-            {
-                Console.WriteLine("Exception: {0}", ex.Message);
-                return;
-            }
+            Console.WriteLine(e.Node.Text);
+            AddorRemoveItem(e.Node.FullPath);
         }
 
-        private void dataView_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            int row = e.RowIndex;
-            if (row >= 0)
-            {
-                dataViewRemote.Rows[row].Selected = true;
-            }
-        }
-
-        private void dataView_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
-        {
-            int row = e.RowIndex;
-            if (row >= 0)
-            {
-                dataViewRemote.Rows[row].Selected = false;
-            }
-        }
-#endregion
+        #endregion
 
         private void richtxtActivity_TextChanged(object sender, EventArgs e)
         {
@@ -629,5 +578,13 @@ namespace JIRAFolderOpener
                 JIRAFile.Copy(sourcePath, DesPath);
             });
         }
+
+        private void checkDeliveryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MeterCheckForm CheckDelForm = new MeterCheckForm();
+            
+            CheckDelForm.Show(this);
+        }
+
     }
 }

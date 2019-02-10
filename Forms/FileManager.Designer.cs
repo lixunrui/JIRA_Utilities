@@ -1,6 +1,6 @@
 ﻿namespace JIRAFolderOpener
 {
-    partial class FilePicker
+    partial class FileManager
     {
         /// <summary>
         /// Required designer variable.
@@ -29,15 +29,17 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FilePicker));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FileManager));
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
-            this.dataViewRemote = new System.Windows.Forms.DataGridView();
             this.ckbDecode = new System.Windows.Forms.CheckBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBoxFolder = new System.Windows.Forms.GroupBox();
+            this.tvFileView = new System.Windows.Forms.TreeView();
+            this.btnMergeFiles = new System.Windows.Forms.Button();
+            this.btnRestore = new System.Windows.Forms.Button();
             this.lblFileCount = new System.Windows.Forms.Label();
             this.btnSwitch = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
@@ -48,11 +50,10 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openWithDefaultEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.checkDeliveryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setDefaultEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.btnRestore = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.dataViewRemote)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.groupBoxFolder.SuspendLayout();
             this.groupBoxActivity.SuspendLayout();
@@ -80,24 +81,6 @@
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
-            // 
-            // dataViewRemote
-            // 
-            this.dataViewRemote.AllowUserToAddRows = false;
-            this.dataViewRemote.AllowUserToDeleteRows = false;
-            this.dataViewRemote.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dataViewRemote.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.dataViewRemote.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataViewRemote.Location = new System.Drawing.Point(0, 46);
-            this.dataViewRemote.Name = "dataViewRemote";
-            this.dataViewRemote.ReadOnly = true;
-            this.dataViewRemote.Size = new System.Drawing.Size(584, 300);
-            this.dataViewRemote.TabIndex = 3;
-            this.dataViewRemote.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataView_CellContentClick);
-            this.dataViewRemote.CellMouseLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataView_CellMouseLeave);
-            this.dataViewRemote.CellMouseMove += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataView_CellMouseMove);
             // 
             // ckbDecode
             // 
@@ -139,6 +122,8 @@
             this.groupBoxFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxFolder.Controls.Add(this.tvFileView);
+            this.groupBoxFolder.Controls.Add(this.btnMergeFiles);
             this.groupBoxFolder.Controls.Add(this.btnRestore);
             this.groupBoxFolder.Controls.Add(this.lblFileCount);
             this.groupBoxFolder.Controls.Add(this.btnSwitch);
@@ -149,6 +134,41 @@
             this.groupBoxFolder.TabIndex = 7;
             this.groupBoxFolder.TabStop = false;
             this.groupBoxFolder.Text = "Server Folder";
+            // 
+            // tvFileView
+            // 
+            this.tvFileView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tvFileView.Location = new System.Drawing.Point(12, 19);
+            this.tvFileView.Name = "tvFileView";
+            this.tvFileView.Size = new System.Drawing.Size(560, 300);
+            this.tvFileView.TabIndex = 5;
+            this.tvFileView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvFileView_AfterCheck);
+            // 
+            // btnMergeFiles
+            // 
+            this.btnMergeFiles.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnMergeFiles.Location = new System.Drawing.Point(114, 326);
+            this.btnMergeFiles.Name = "btnMergeFiles";
+            this.btnMergeFiles.Size = new System.Drawing.Size(69, 25);
+            this.btnMergeFiles.TabIndex = 4;
+            this.btnMergeFiles.Text = "Merge Files";
+            this.btnMergeFiles.UseVisualStyleBackColor = true;
+            this.btnMergeFiles.Click += new System.EventHandler(this.btnMergeFiles_Click);
+            // 
+            // btnRestore
+            // 
+            this.btnRestore.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRestore.Location = new System.Drawing.Point(405, 327);
+            this.btnRestore.Name = "btnRestore";
+            this.btnRestore.Size = new System.Drawing.Size(75, 23);
+            this.btnRestore.TabIndex = 3;
+            this.btnRestore.Text = "RestoreDB";
+            this.btnRestore.UseVisualStyleBackColor = true;
+            this.btnRestore.Click += new System.EventHandler(this.btnRestore_Click);
             // 
             // lblFileCount
             // 
@@ -234,7 +254,8 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openWithDefaultEditorToolStripMenuItem});
+            this.openWithDefaultEditorToolStripMenuItem,
+            this.checkDeliveryToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -246,6 +267,13 @@
             this.openWithDefaultEditorToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
             this.openWithDefaultEditorToolStripMenuItem.Text = "Open With Default Editor";
             this.openWithDefaultEditorToolStripMenuItem.Click += new System.EventHandler(this.openWithDefaultEditorToolStripMenuItem_Click);
+            // 
+            // checkDeliveryToolStripMenuItem
+            // 
+            this.checkDeliveryToolStripMenuItem.Name = "checkDeliveryToolStripMenuItem";
+            this.checkDeliveryToolStripMenuItem.Size = new System.Drawing.Size(206, 22);
+            this.checkDeliveryToolStripMenuItem.Text = "Check Delivery";
+            this.checkDeliveryToolStripMenuItem.Click += new System.EventHandler(this.checkDeliveryToolStripMenuItem_Click);
             // 
             // settingsToolStripMenuItem
             // 
@@ -266,19 +294,7 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // btnRestore
-            // 
-            this.btnRestore.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnRestore.Location = new System.Drawing.Point(405, 327);
-            this.btnRestore.Name = "btnRestore";
-            this.btnRestore.Size = new System.Drawing.Size(75, 23);
-            this.btnRestore.TabIndex = 3;
-            this.btnRestore.Text = "RestoreDB";
-            this.btnRestore.UseVisualStyleBackColor = true;
-            this.btnRestore.Click += new System.EventHandler(this.btnRestore_Click);
-            // 
-            // FilePicker
+            // FileManager
             // 
             this.AcceptButton = this.btnStart;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -289,15 +305,13 @@
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.ckbDecode);
-            this.Controls.Add(this.dataViewRemote);
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.groupBoxFolder);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "FilePicker";
-            this.Text = "File Picker";
-            ((System.ComponentModel.ISupportInitialize)(this.dataViewRemote)).EndInit();
+            this.Name = "FileManager";
+            this.Text = "File Manager";
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.groupBoxFolder.ResumeLayout(false);
@@ -314,7 +328,6 @@
 
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnStart;
-        private System.Windows.Forms.DataGridView dataViewRemote;
         private System.Windows.Forms.CheckBox ckbDecode;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripProgressBar statusProgress;
@@ -334,5 +347,8 @@
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openWithDefaultEditorToolStripMenuItem;
         private System.Windows.Forms.Button btnRestore;
+        private System.Windows.Forms.ToolStripMenuItem checkDeliveryToolStripMenuItem;
+        private System.Windows.Forms.Button btnMergeFiles;
+        private System.Windows.Forms.TreeView tvFileView;
     }
 }

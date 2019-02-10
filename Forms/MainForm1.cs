@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace JIRAFolderOpener
@@ -42,10 +37,14 @@ namespace JIRAFolderOpener
         bool registerStatus = false;
 
         FilePicker filePicker; // only one instance is allowed, otherwise, some odd errors will happen
+        FileManager fileManager;
+        YLog log;
 
         public MainForm1()
         {
             InitializeComponent();
+
+            log = new YLog("JIRA");
 
             DisplayVersion();
 
@@ -82,9 +81,12 @@ namespace JIRAFolderOpener
 
 
             //TODO: Testing watcher function
-            DirectoryWatcher watcher = new DirectoryWatcher("C:\\Enabler\\log");
+            DirectoryWatcher watcher = new DirectoryWatcher("C:\\Enabler\\log", log);
             watcher.EnableWatcher = true;
 
+#if TEST
+            RunTest();
+#endif
         }
 
         #region HotKey Register and Function
@@ -324,7 +326,7 @@ namespace JIRAFolderOpener
 
         private void btnOpen_Click(object sender, EventArgs e)
         {
-            // get number from txt JIRA box
+            // get number from text JIRA box
             string caseNumStr = txtJiraCaseNum.Text;
 
             FileOperator.OpenFile(caseNumStr, out caseNumStr);
@@ -345,19 +347,32 @@ namespace JIRAFolderOpener
                     return;
                 }
             }
-            
+            /*
             if (filePicker == null)
             {
-                filePicker = new FilePicker(targetPath);//, fileoperator);
+                filePicker = new FilePicker(targetPath, log);//, fileoperator);
                 //filePicker.TopMost = true;
                 filePicker.FormClosing += filePicker_FormClosing;
+                
                 filePicker.Show(this);
+                filePicker.Activate();
+            }
+            */
+            if (fileManager == null)
+            {
+                fileManager = new FileManager(targetPath, log);//, fileoperator);
+                //filePicker.TopMost = true;
+                fileManager.FormClosing += filePicker_FormClosing;
+
+                fileManager.Show(this);
+                fileManager.Activate();
             }
         }
 
         void filePicker_FormClosing(object sender, FormClosingEventArgs e)
         {
             filePicker = null;
+            fileManager = null;
         }
 
         private void OpenFolder()
@@ -440,6 +455,16 @@ namespace JIRAFolderOpener
         {
             text = DateTime.Now + " " + text;
             txtMsg.Text += text + Environment.NewLine;
+            log.WriteLine(text);
+        }
+        #endregion
+
+
+        #region Test Function
+        public void RunTest()
+        {
+            MeterCheckForm testCheckDelForm = new MeterCheckForm("C:\\Enabler\\Log", log);
+            testCheckDelForm.ShowDialog();
         }
         #endregion
     }

@@ -22,6 +22,7 @@ namespace JIRAFolderOpener
         const string decodedDirectory = "JIRA";
 
         const string subFolderPrefix = "J_";
+        YLog log;
 
         /*
         https://social.msdn.microsoft.com/Forums/vstudio/en-US/94b4e59b-33d2-4230-873c-eaea680c973d/get-changed-text-using-filesystemwatcher?forum=csharpgeneral
@@ -59,9 +60,11 @@ namespace JIRAFolderOpener
             }
         }
         FileSystemWatcher watcher;
-        internal DirectoryWatcher(string dirPath)
+        internal DirectoryWatcher(string dirPath, YLog log)
         {
             _dirPath = dirPath;
+            this.log = log;
+
             watchFiles = new Dictionary<FileInfo, long>();
 
             if (!Directory.Exists(_dirPath))
@@ -117,6 +120,8 @@ namespace JIRAFolderOpener
         private void Watcher_Changed(object sender, FileSystemEventArgs e)
         {
             Console.WriteLine("File {0} changed", e.Name);
+
+            /*
             // search the directory for the file and compare the last write time 
             FileInfo modifiedFile = new FileInfo(Path.Combine(_dirPath, e.Name));
             KeyValuePair<FileInfo, long> TempFile = watchFiles.FirstOrDefault(f => f.Key.Name == e.Name);
@@ -125,25 +130,46 @@ namespace JIRAFolderOpener
                 return;
             }
 
-            // output the new added data
-            using (FileStream fstream = new FileStream(Path.Combine(_dirPath, e.Name), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            //LogParameters param = new LogParameters()
+            //{
+            //    LogDirectory = _dirPath,
+            //    MaxLogSize = 5 * 1024 * 1024,
+            //    ExceptionFileName = "WatcherException.log",
+
+            //};
+            //YLog logFile = new YLog("Watcher", param);
+
+            // ISSUE:
+            Need to check file size before continuing writing.
+            try
             {
-                fstream.Position = TempFile.Key.Length;
-                using (StreamReader reader = new StreamReader(fstream))
+                // output the new added data
+                using (FileStream fstream = new FileStream(Path.Combine(_dirPath, e.Name), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    string newString = reader.ReadToEnd();
-                    
-                    // create a temp file in a different folder, and write the new strings in
-                    using (FileStream wfStream = new FileStream(Path.Combine(Path.Combine(_dirPath, decodedDirectory), subFolderPrefix + e.Name), FileMode.Append, FileAccess.Write, FileShare.None))
+                    fstream.Position = TempFile.Key.Length;
+                    using (StreamReader reader = new StreamReader(fstream))
                     {
-                        using (StreamWriter write = new StreamWriter(wfStream))
+                        string newString = reader.ReadToEnd();
+
+                        // create a temp file in a different folder, and write the new strings in
+                        using (FileStream wfStream = new FileStream(Path.Combine(Path.Combine(_dirPath, decodedDirectory), subFolderPrefix + e.Name), FileMode.Append, FileAccess.Write, FileShare.None))
                         {
-                            write.Write(Decrypo.DecrypoData(newString));
-                            write.Flush();
+                            using (StreamWriter write = new StreamWriter(wfStream))
+                            {
+                                write.Write(Decrypo.DecrypoData(newString));
+                                write.Flush();
+                            }
                         }
                     }
                 }
             }
+            catch(Exception ex)
+            {
+                log.LogException(ex);
+            }
+
+    */
+            
         }
 
         private void RaiseNotification(string message)
