@@ -1,4 +1,4 @@
-﻿namespace JIRAFolderOpener
+﻿namespace JIRASupport
 {
     partial class MeterCheckForm
     {

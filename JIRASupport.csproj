@@ -7,8 +7,8 @@
     <ProjectGuid>{C61607FE-2689-4193-83A6-138DA89D2FDD}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JIRAFolderOpener</RootNamespace>
-    <AssemblyName>JIRAFolderOpener</AssemblyName>
+    <RootNamespace>JIRASupport</RootNamespace>
+    <AssemblyName>JIRASupport</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>

@@ -12,7 +12,7 @@ using System.IO.Compression;
 using System.Threading;
 
 
-namespace JIRAFolderOpener
+namespace JIRASupport
 {
     public partial class FileManager : Form
     {  
@@ -301,7 +301,7 @@ namespace JIRAFolderOpener
             else
                 LoadFileList(targetFolder);
 
-            UpdateActivityMessage(JIRAFolderOpener.Properties.Resources.Txt_File_Updated);
+            UpdateActivityMessage(JIRASupport.Properties.Resources.Txt_File_Updated);
         }
 
         /// <summary>
@@ -351,8 +351,8 @@ namespace JIRAFolderOpener
         {
             if (!isServerFolderOpen)
             {
-                groupBoxFolder.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Server;
-                btnSwitch.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Local;
+                groupBoxFolder.Text = JIRASupport.Properties.Resources.Txt_Switch_Server;
+                btnSwitch.Text = JIRASupport.Properties.Resources.Txt_Switch_Local;
                 btnSwitch.TextAlign = ContentAlignment.MiddleCenter;
                 fileList.Clear();
                 LoadFileList(LocalFilePath.SourceFilePath);
@@ -360,8 +360,8 @@ namespace JIRAFolderOpener
             }
             else
             {
-                groupBoxFolder.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Local;
-                btnSwitch.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Server;
+                groupBoxFolder.Text = JIRASupport.Properties.Resources.Txt_Switch_Local;
+                btnSwitch.Text = JIRASupport.Properties.Resources.Txt_Switch_Server;
                 btnSwitch.TextAlign = ContentAlignment.MiddleCenter;
                 fileList.Clear();
                 LoadFileList(targetFolder);
@@ -586,5 +586,19 @@ namespace JIRAFolderOpener
             CheckDelForm.Show(this);
         }
 
+        private void tvFileView_MouseMove(object sender, MouseEventArgs e)
+        {
+            TreeNode node = this.tvFileView.GetNodeAt(e.X, e.Y);
+
+            if(node != null && node.Tag != null)
+            {
+                if (node.Tag.ToString() != this.toolTips.GetToolTip(this.tvFileView))
+                    this.toolTips.SetToolTip(this.tvFileView, node.Tag.ToString());
+            }
+            else
+            {
+                this.toolTips.SetToolTip(this.tvFileView, "");
+            }
+        }
     }
 }

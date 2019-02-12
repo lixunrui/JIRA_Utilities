@@ -12,7 +12,7 @@ using System.IO.Compression;
 using System.Threading;
 
 
-namespace JIRAFolderOpener
+namespace JIRASupport
 {
     public partial class FilePicker : Form
     {  
@@ -341,7 +341,7 @@ namespace JIRAFolderOpener
             else
                 LoadFileList(targetFolder);
 
-            UpdateActivityMessage(JIRAFolderOpener.Properties.Resources.Txt_File_Updated);
+            UpdateActivityMessage(JIRASupport.Properties.Resources.Txt_File_Updated);
         }
 
         /// <summary>
@@ -391,8 +391,8 @@ namespace JIRAFolderOpener
         {
             if (!isServerFolderOpen)
             {
-                groupBoxFolder.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Server;
-                btnSwitch.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Local;
+                groupBoxFolder.Text = JIRASupport.Properties.Resources.Txt_Switch_Server;
+                btnSwitch.Text = JIRASupport.Properties.Resources.Txt_Switch_Local;
                 btnSwitch.TextAlign = ContentAlignment.MiddleCenter;
                 fileList.Clear();
                 LoadFileList(LocalFilePath.SourceFilePath);
@@ -400,8 +400,8 @@ namespace JIRAFolderOpener
             }
             else
             {
-                groupBoxFolder.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Local;
-                btnSwitch.Text = JIRAFolderOpener.Properties.Resources.Txt_Switch_Server;
+                groupBoxFolder.Text = JIRASupport.Properties.Resources.Txt_Switch_Local;
+                btnSwitch.Text = JIRASupport.Properties.Resources.Txt_Switch_Server;
                 btnSwitch.TextAlign = ContentAlignment.MiddleCenter;
                 fileList.Clear();
                 LoadFileList(targetFolder);

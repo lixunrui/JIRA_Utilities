@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JIRAFolderOpener
+namespace JIRASupport
 {
     enum RegisterType
     {

@@ -1,4 +1,4 @@
-﻿namespace JIRAFolderOpener
+﻿namespace JIRASupport
 {
     partial class FileManager
     {
@@ -145,6 +145,7 @@
             this.tvFileView.Size = new System.Drawing.Size(560, 300);
             this.tvFileView.TabIndex = 5;
             this.tvFileView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvFileView_AfterCheck);
+            this.tvFileView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.tvFileView_MouseMove);
             // 
             // btnMergeFiles
             // 

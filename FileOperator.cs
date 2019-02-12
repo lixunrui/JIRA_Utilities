@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 
-namespace JIRAFolderOpener
+namespace JIRASupport
 {
     public enum OperationStatus
     {

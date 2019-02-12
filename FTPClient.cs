@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 /// http://www.codingvision.net/networking/c-connecting-to-ftp-server
 /// </summary>
 
-namespace JIRAFolderOpener
+namespace JIRASupport
 {
     internal class FTPClient
     {

@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Automation;
 
-namespace JIRAFolderOpener
+namespace JIRASupport
 {
 
     internal class URLExtractor

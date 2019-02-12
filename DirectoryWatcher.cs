@@ -6,7 +6,7 @@ using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JIRAFolderOpener
+namespace JIRASupport
 {
     /// <summary>
     /// This class uses to monitor a directory for any change, and then display/decode it
