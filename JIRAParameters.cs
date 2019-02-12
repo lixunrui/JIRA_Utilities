@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace JIRAFolderOpener
+namespace JIRASupport
 {
     internal struct FileStruct
     {
