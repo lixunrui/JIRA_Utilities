@@ -1,6 +1,6 @@
-/obj/*.*
-/bin/*.*
-/Configuration/*.*
+obj/*.*
+bin/*.*
+Configuration/*.*
 *.lock
 *.ide
 *.ide-shm
