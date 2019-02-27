@@ -97,5 +97,11 @@ namespace JIRASupport
         {
             return base.Find(match);
         }
+
+        internal void SortByTime(string a, string b, bool ascending)
+        {
+            FileInfo fileA = new FileInfo(a);
+            FileInfo fileB = new FileInfo(b);
+        }
     }
 }

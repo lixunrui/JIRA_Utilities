@@ -37,7 +37,7 @@
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBoxFolder = new System.Windows.Forms.GroupBox();
-            this.tvFileView = new System.Windows.Forms.TreeView();
+            this.treeView = new System.Windows.Forms.TreeView();
             this.btnMergeFiles = new System.Windows.Forms.Button();
             this.btnRestore = new System.Windows.Forms.Button();
             this.lblFileCount = new System.Windows.Forms.Label();
@@ -122,7 +122,7 @@
             this.groupBoxFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxFolder.Controls.Add(this.tvFileView);
+            this.groupBoxFolder.Controls.Add(this.treeView);
             this.groupBoxFolder.Controls.Add(this.btnMergeFiles);
             this.groupBoxFolder.Controls.Add(this.btnRestore);
             this.groupBoxFolder.Controls.Add(this.lblFileCount);
@@ -135,17 +135,17 @@
             this.groupBoxFolder.TabStop = false;
             this.groupBoxFolder.Text = "Server Folder";
             // 
-            // tvFileView
+            // treeView
             // 
-            this.tvFileView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.treeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tvFileView.Location = new System.Drawing.Point(12, 19);
-            this.tvFileView.Name = "tvFileView";
-            this.tvFileView.Size = new System.Drawing.Size(560, 300);
-            this.tvFileView.TabIndex = 5;
-            this.tvFileView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvFileView_AfterCheck);
-            this.tvFileView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.tvFileView_MouseMove);
+            this.treeView.Location = new System.Drawing.Point(12, 19);
+            this.treeView.Name = "treeView";
+            this.treeView.Size = new System.Drawing.Size(560, 300);
+            this.treeView.TabIndex = 5;
+            this.treeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvFileView_AfterCheck);
+            this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.tvFileView_MouseMove);
             // 
             // btnMergeFiles
             // 
@@ -350,6 +350,6 @@
         private System.Windows.Forms.Button btnRestore;
         private System.Windows.Forms.ToolStripMenuItem checkDeliveryToolStripMenuItem;
         private System.Windows.Forms.Button btnMergeFiles;
-        private System.Windows.Forms.TreeView tvFileView;
+        private System.Windows.Forms.TreeView treeView;
     }
 }

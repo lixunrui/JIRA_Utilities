@@ -128,7 +128,7 @@ namespace JIRASupport
             if(canMergeFiles)
             {
                 // Merge selected files into one
-
+                MergeFiles();
             }
             else // unzip and decode log files
             {
@@ -159,8 +159,7 @@ namespace JIRASupport
                     }
                 }
             }
-            
-            //resetEvent.Set();
+           
             backgroundWorker.ReportProgress(100);
         }
 
@@ -204,7 +203,7 @@ namespace JIRASupport
         void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             statusProgress.Value = 100;
-            tvFileView.Enabled = true;
+            treeView.Enabled = true;
             btnStart.Enabled = true;
             btnCancel.Enabled = true;
             ckbDecode.Enabled = true;
@@ -223,12 +222,12 @@ namespace JIRASupport
         // Load Remote folder files
         private void LoadFileList(string folderPath, string fileType="*")
         {
-            tvFileView.Nodes.Clear();
+            treeView.Nodes.Clear();
             DirectoryInfo dirInfo = new DirectoryInfo(folderPath);
-            TreeNode treeNode = tvFileView.Nodes.Add(dirInfo.Name);
+            TreeNode treeNode = treeView.Nodes.Add(dirInfo.Name);
             treeNode.Tag = dirInfo.FullName;
             treeNode.StateImageIndex = 0;
-            tvFileView.CheckBoxes = true;
+            treeView.CheckBoxes = true;
             
             // load files
             LoadFiles(folderPath, treeNode, fileType);
@@ -429,7 +428,16 @@ namespace JIRASupport
         private void tvFileView_AfterCheck(object sender, TreeViewEventArgs e)
         {
             Console.WriteLine(e.Node.Text);
-            AddorRemoveItem(e.Node.FullPath);
+            string nodePath = e.Node.FullPath;
+            if(!isServerFolderOpen)
+            {
+                string topText = (sender as TreeView).TopNode.FullPath;
+                // remove toptext from the node.fullpath 
+                // Node.FullPath = \EP-3956\tes....
+                // need to remove the \EP-3956 from the path
+                nodePath = nodePath.Remove(0, topText.Length+1); // remove the \
+            }
+            AddorRemoveItem(nodePath);
         }
 
         #endregion
@@ -588,17 +596,46 @@ namespace JIRASupport
 
         private void tvFileView_MouseMove(object sender, MouseEventArgs e)
         {
-            TreeNode node = this.tvFileView.GetNodeAt(e.X, e.Y);
+            TreeNode node = this.treeView.GetNodeAt(e.X, e.Y);
 
             if(node != null && node.Tag != null)
             {
-                if (node.Tag.ToString() != this.toolTips.GetToolTip(this.tvFileView))
-                    this.toolTips.SetToolTip(this.tvFileView, node.Tag.ToString());
+                if (node.Tag.ToString() != this.toolTips.GetToolTip(this.treeView))
+                    this.toolTips.SetToolTip(this.treeView, node.Tag.ToString());
             }
             else
             {
-                this.toolTips.SetToolTip(this.tvFileView, "");
+                this.toolTips.SetToolTip(this.treeView, "");
             }
         }
+
+        private void MergeFiles()
+        {
+            canMergeFiles = false;
+            if (fileList.Count == 0)
+                return;
+
+            string dirPath = Path.GetDirectoryName(fileList[0]);
+
+            // TODO: Update the Order function, need to order by last write time
+            // FileList<string> sortedFiles = fileList.OrderByDescending()
+
+            using (StreamWriter writer = new StreamWriter(Path.Combine(dirPath, "temp.log"), true))
+            {
+                foreach (string file in fileList)
+                {
+                    using (StreamReader reader = new StreamReader(file))
+                    {
+                        while(reader.EndOfStream)
+                        {
+                            writer.WriteLine(reader.ReadLine());
+                        }
+                    }
+                }
+            }
+            
+            
+        }
     }
+
 }

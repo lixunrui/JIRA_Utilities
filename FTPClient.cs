@@ -31,7 +31,7 @@ namespace JIRASupport
         
         internal FTPClient(string hostIP, string userName, string pwd)
         {
-            //TODO: LAter
+            //TODO: Later
             // FTPParameters.LoadServerInfoFromFile();
             host = hostIP; user = userName; password = pwd;
         }

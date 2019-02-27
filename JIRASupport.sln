@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JIRASupport", "JIRASupport.csproj", "{C61607FE-2689-4193-83A6-138DA89D2FDD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_Test|Any CPU = Debug_Test|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		JIRA|Any CPU = JIRA|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Debug_Test|Any CPU.ActiveCfg = Debug_Test|Any CPU
+		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Debug_Test|Any CPU.Build.0 = Debug_Test|Any CPU
+		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C61607FE-2689-4193-83A6-138DA89D2FDD}.JIRA|Any CPU.ActiveCfg = JIRA|Any CPU
+		{C61607FE-2689-4193-83A6-138DA89D2FDD}.JIRA|Any CPU.Build.0 = JIRA|Any CPU
+		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {14FCD17C-C963-4913-BE10-EA9FC1C7E3A2}
+	EndGlobalSection
+EndGlobal

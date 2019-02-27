@@ -239,7 +239,7 @@ namespace JIRASupport
 
             notifyIcon1.Visible = true;
 
-            notifyIcon1.Text = "JIRA Folder Opener";
+            notifyIcon1.Text = "JIRA Support Tool";
 
             notifyIcon1.ContextMenu = GenerateIconMenu();
         }

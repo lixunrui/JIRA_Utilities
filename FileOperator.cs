@@ -41,20 +41,19 @@ namespace JIRASupport
 	    }
         public static void UnZipFile(string folder, string filename)
         {
-            SendEvent(String.Format("Start Unzipping..."), OperationStatus.START);
             if (filename != null)
             {
                 string fileExt = Path.GetExtension(filename).ToLower();
-                var matchItem = FileTypes.ZipFileTypes.Where(ext => ext == fileExt);
-                if (matchItem!=null)
+                IEnumerable<string> matchItem = FileTypes.ZipFileTypes.Where(ext => ext == fileExt);
+                if (matchItem.Count() > 0)
                 {
                     try
                     {
                         SendEvent(String.Format("Unzipping {0}", filename), OperationStatus.MESSAGE);
-                        ZipFile.ExtractToDirectory(Path.Combine(folder, filename), Path.Combine(folder, filename.Substring(0, filename.Length - 4)));
-                        Console.WriteLine("Unzip file {0} file at {1}", filename, folder);
 
-                        UnZipFile(Path.Combine(folder, Path.GetFileNameWithoutExtension(filename)), null);
+                        ZipFile.ExtractToDirectory(Path.Combine(folder, filename), Path.Combine(folder, filename.Substring(0, filename.Length - 4)));
+
+                        UnZipFile(Path.ChangeExtension(Path.Combine(folder, filename), null), null);
                     }
                     catch(Exception e)
                     {
@@ -82,20 +81,7 @@ namespace JIRASupport
 
                 foreach (string file in files)
                 {
-                    string fileExt = Path.GetExtension(filename).ToLower();
-                    var matchItem = FileTypes.ZipFileTypes.Where(ext => ext == fileExt);
-                    if (matchItem != null)
-                    {
-                        try
-                        {
-                            SendEvent(String.Format("Upziping {0} starting...", file), OperationStatus.START);
-                            ZipFile.ExtractToDirectory(file, Path.Combine(folder, Path.GetFileNameWithoutExtension(file)));
-                            SendEvent(String.Format("Upziping {0} completed", file), OperationStatus.MESSAGE);
-                        }
-                        catch { }
-                        Console.WriteLine("Unzip file {0} file at {1}", file, folder);
-                        UnZipFile(Path.Combine(folder, Path.GetFileNameWithoutExtension(file)), null);
-                    }
+                    UnZipFile(folder, Path.GetFileName(file));
                 }
             }
         }
@@ -105,6 +91,7 @@ namespace JIRASupport
             string[] allLogs = Directory.GetFiles(folder, "*.log", SearchOption.AllDirectories);
 
             Console.WriteLine("Found {0} logs", allLogs.Length);
+            SendEvent(String.Format("Decoding folder {0}", folder), OperationStatus.MESSAGE);
 
             Process process = new Process();
 
@@ -112,8 +99,6 @@ namespace JIRASupport
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 
             process.StartInfo.FileName = @"DC.exe";
-
-            SendEvent(String.Format("Start Decoding..."), OperationStatus.START);
 
             foreach (string log in allLogs)
             {
@@ -123,7 +108,6 @@ namespace JIRASupport
 
                 process.WaitForExit();
             }
-          //  SendEvent(null, OperationStatus.END);
         }
 
         internal static void OpenFile(string caseNum, out string targetFullPath)
