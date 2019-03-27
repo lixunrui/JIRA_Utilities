@@ -1,11 +1,5 @@
-obj/*.*
-bin/*.*
+obj/*
+bin/*
 Configuration/*.*
-*.lock
-*.ide
-*.ide-shm
-*.ide-wal
-obj/Debug/*.*
 
-*.xml
-bin/Debug/JIRAFolderOpener.exe.config
+.vs/*
