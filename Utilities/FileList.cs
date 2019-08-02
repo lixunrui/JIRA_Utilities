@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JIRASupport
 {
@@ -14,7 +11,6 @@ namespace JIRASupport
                 ".zip",
                 ".rar"
             };
-
     }
     
     internal class FileList<T> : List<T>

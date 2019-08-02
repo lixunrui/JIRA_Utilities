@@ -47,12 +47,14 @@ namespace JIRASupport
 
                         string URLName = elem1.Current.Name;
 
-                        Regex reg = new Regex(@"\[(.*?)\]");
+                        string patten = @"\[(\D{2})-(\d{1,4})\]";
+                        Regex reg = new Regex(patten);
                         Match m = reg.Match(URLName);
 
                         if (m.Success)
                         {
-                            return m.Value;
+                            return m.Value.Substring(1, m.Length - 2);
+                            //return m.Value; // return [ES-XXX]
                         }
                         else
                             continue;

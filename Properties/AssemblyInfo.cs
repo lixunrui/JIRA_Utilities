@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Raymond")]
 [assembly: AssemblyProduct("JIRA Utility")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,4 +33,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 // https://docs.microsoft.com/en-us/dotnet/api/system.reflection.assemblyversionattribute?redirectedfrom=MSDN&view=netframework-4.7.2
-[assembly: AssemblyVersion("2.10.*")]
+[assembly: AssemblyVersion("2.11.1.*")]

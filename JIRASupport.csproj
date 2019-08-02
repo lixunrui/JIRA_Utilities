@@ -85,11 +85,11 @@
     <Reference Include="UIAutomationTypes" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Forms\FileManager.cs">
+    <Compile Include="Forms\DownloadForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\FileManager.Designer.cs">
-      <DependentUpon>FileManager.cs</DependentUpon>
+    <Compile Include="Forms\DownloadForm.Designer.cs">
+      <DependentUpon>DownloadForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\MeterCheckForm.cs">
       <SubType>Form</SubType>
@@ -97,40 +97,46 @@
     <Compile Include="Forms\MeterCheckForm.Designer.cs">
       <DependentUpon>MeterCheckForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="DirectoryWatcher.cs" />
-    <Compile Include="JIRAParameters.cs" />
-    <Compile Include="FileList.cs" />
-    <Compile Include="FileOperator.cs" />
-    <Compile Include="Forms\FilePicker.cs">
+    <Compile Include="Resource1.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resource1.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Utilities\DirectoryWatcher.cs" />
+    <Compile Include="Configuration\JIRAParameters.cs" />
+    <Compile Include="Utilities\FileList.cs" />
+    <Compile Include="Utilities\FileOperator.cs" />
+    <Compile Include="Forms\DownloadFormByDataTable.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\FilePicker.Designer.cs">
-      <DependentUpon>FilePicker.cs</DependentUpon>
+    <Compile Include="Forms\DownloadFormByDataTable.Designer.cs">
+      <DependentUpon>DownloadFormByDataTable.cs</DependentUpon>
     </Compile>
-    <Compile Include="FTPClient.cs" />
-    <Compile Include="HotKeyController.cs" />
-    <Compile Include="Forms\MainForm1.cs">
+    <Compile Include="FTP\FTPClient.cs" />
+    <Compile Include="Utilities\HotKeyController.cs" />
+    <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\MainForm1.Designer.cs">
-      <DependentUpon>MainForm1.cs</DependentUpon>
+    <Compile Include="Forms\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="KeyHandler.cs" />
+    <Compile Include="Utilities\KeyHandler.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="URLExtractor.cs" />
-    <Compile Include="YLog.cs" />
-    <EmbeddedResource Include="Forms\FileManager.resx">
-      <DependentUpon>FileManager.cs</DependentUpon>
+    <Compile Include="Utilities\URLExtractor.cs" />
+    <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="Utilities\YLog.cs" />
+    <EmbeddedResource Include="Forms\DownloadForm.resx">
+      <DependentUpon>DownloadForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\MeterCheckForm.resx">
       <DependentUpon>MeterCheckForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\FilePicker.resx">
-      <DependentUpon>FilePicker.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\DownloadFormByDataTable.resx">
+      <DependentUpon>DownloadFormByDataTable.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\MainForm1.resx">
-      <DependentUpon>MainForm1.cs</DependentUpon>
+    <EmbeddedResource Include="Forms\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -142,6 +148,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Resource1.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -156,10 +166,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Configuration\settings.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <EmbeddedResource Include="Configuration\settings.xml">
       <SubType>Designer</SubType>
-    </Content>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
     <Content Include="jira.ico" />
   </ItemGroup>
   <ItemGroup>

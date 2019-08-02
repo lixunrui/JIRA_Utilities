@@ -14,37 +14,43 @@ using System.Threading;
 
 namespace JIRASupport
 {
-    public partial class FileManager : Form
+    public partial class DownloadFormByDataTable : Form
     {  
-       // const string decodeMiddlePaht = @"Enabler\Log"; // Folder\ITLXXXX\Enabler\Log
-       // List<string> fileList;
-        FileList<string> fileList;
-        FileList<string> filesToMerge;
-        string targetFolder;
+        FileList<string> FileList;
+        string jiraDirectory;
         AutoResetEvent resetEvent = new AutoResetEvent(false);
         bool isServerFolderOpen = true;
         bool openWithEditor = false;
-        bool canMergeFiles = false;
         YLog log;
 
+        public string JIRADirectory
+        {
+            set { jiraDirectory = value; }
+        }
+
+        const int CHK_INDEX = 0;
         const int NAME_INDEX = 0;
         const int LAST_WRITE_INDEX = 1;
         const int FILE_SIZE_INDEX = 2;
         const int FULL_PATH_INDEX = 3;
 
-        public FileManager(string folder, YLog log)
+        const string FILE_NAME = "Name";
+        const string FILE_LAST_WRITE_DT = "Last Write Time";
+        const string FILE_SIZE = "Size";
+        const string FILE_FULL_PATH = "Path";
+
+        public DownloadFormByDataTable(string JIRADirectory, YLog log)//, FileOperator fileOperator)
         {
             InitializeComponent();
             InitComponents();
             this.CenterToScreen();
             this.log = log;
-            this.targetFolder = folder;
-            this.Text = folder;
-            fileList = new FileList<string>();
-            fileList.OnFileChange += fileList_OnFileChange;
+            this.jiraDirectory = JIRADirectory;
+            // set form title
+            this.Text = JIRADirectory;
+            FileList = new FileList<string>();
 
-            filesToMerge = new FileList<string>();
-
+            FileList.OnFileChange += FileListChangeEvent;
             LoadFileList(LocalFilePath.SourceFilePath);
            // FTPParameters.LoadServerInfoFromFile();
             FileOperator.OperationEvent += FileOperator_OperationEvent;
@@ -54,18 +60,21 @@ namespace JIRASupport
         private void InitComponents()
         {
             groupBoxFolder.Text = Properties.Resources.Txt_Switch_Server;
+
             this.toolTips.SetToolTip(btnStart, Properties.Resources.Txt_Btn_Start_Tooltip);
             this.toolTips.SetToolTip(ckbUnzip, Properties.Resources.Txt_Unzip);
             this.toolTips.SetToolTip(ckbDecode, Properties.Resources.Txt_Decode);
-            fileList_OnFileChange(0, false);
-            if(isServerFolderOpen)
+
+            FileListChangeEvent(0, false);
+
+            if (isServerFolderOpen)
             {
                 btnRestore.Visible = false;
                 btnRestore.Enabled = false;
             }
         }
 
-        void fileList_OnFileChange(int fileCount, bool hasZipFile)
+        void FileListChangeEvent(int fileCount, bool hasZipFile)
         {
             if (fileCount == 0)
             {
@@ -108,7 +117,10 @@ namespace JIRASupport
 
         void UpdateSelectedFileCount(string message)
         {
-            lblFileCount.Text = message;
+           // this.BeginInvoke(new Action(() =>
+            //{
+                lblFileCount.Text = message;
+           // }));
         }
 
         void UpdateActivityMessage(string message)
@@ -124,42 +136,34 @@ namespace JIRASupport
         void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             backgroundWorker.ReportProgress(0, "Start");
-
-            if(canMergeFiles)
+            foreach (string fileName in FileList)
             {
-                // Merge selected files into one
-                MergeFiles();
-            }
-            else // unzip and decode log files
-            {
-                foreach (string fileName in fileList)
+                if (isServerFolderOpen)
                 {
-                    if (isServerFolderOpen)
-                    {
-                        FileInfo tempFileInfo = new FileInfo(fileName);
-                        string destFile = Path.Combine(targetFolder, tempFileInfo.Name); // \\appserv\EP\EP-XXX\Enabler.XXX
-                        string sourceFile = Path.Combine(LocalFilePath.SourceFilePath, fileName); // \\appserv\incoming\ENabler.XXX or \\appserv\Logs\EX-####
-                        Console.WriteLine("Done copy");
+                    FileInfo tempFileInfo = new FileInfo(fileName);
+                    // targetFolder is null
+                    string destFile = Path.Combine(jiraDirectory, tempFileInfo.Name); // \\appserv\EP\EP-XXX\Enabler.XXX
+                    string sourceFile = Path.Combine(LocalFilePath.SourceFilePath, fileName); // \\appserv\incoming\ENabler.XXX or \\appserv\Logs\EX-####
+                    Console.WriteLine("Done copy");
 
-                        System.IO.File.Copy(tempFileInfo.FullName, destFile, true);
-                        Console.WriteLine("File {0} Copied", fileName);
-                        UpdateActivityMessage(String.Format("File {0} Copied", fileName));
-                    }
+                    System.IO.File.Copy(tempFileInfo.FullName, destFile, true);
+                    Console.WriteLine("File {0} Copied", fileName);
+                    UpdateActivityMessage(String.Format("File {0} Copied", fileName));
+                }
 
-                    if (ckbUnzip.Checked)
-                    {
-                        FileOperator.UnZipFile(targetFolder, fileName);
-                    }
-
-                    // check whether we need to decode
-                    if (ckbDecode.Checked)
-                    {
-                        Console.WriteLine("Need to decode the file");
-                        FileOperator.DecodeFiles(Path.Combine(targetFolder, Path.GetFileNameWithoutExtension(fileName)));
-                    }
+                if (ckbUnzip.Checked)
+                {
+                    FileOperator.UnZipFile(jiraDirectory, fileName);
+                }
+                
+                // check whether we need to decode
+                if (ckbDecode.Checked)
+                {
+                    Console.WriteLine("Need to decode the file");
+                    FileOperator.DecodeFiles(Path.Combine(jiraDirectory, Path.GetFileNameWithoutExtension(fileName)));
                 }
             }
-           
+            //resetEvent.Set();
             backgroundWorker.ReportProgress(100);
         }
 
@@ -203,7 +207,7 @@ namespace JIRASupport
         void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             statusProgress.Value = 100;
-            treeView.Enabled = true;
+            DataViewRemote.Enabled = true;
             btnStart.Enabled = true;
             btnCancel.Enabled = true;
             ckbDecode.Enabled = true;
@@ -213,52 +217,107 @@ namespace JIRASupport
             UpdateActivityMessage("Done");
             if (openWithEditor)// open the folder
             {
-                FileOperator.OpenWithEditor(targetFolder);
+                FileOperator.OpenWithEditor(jiraDirectory);
             }
         }
         #endregion
 
         #region Create UI Table
-        // Load Remote folder files
-        private void LoadFileList(string folderPath, string fileType="*")
+        // Load Remote folder (P:\) files
+        private void LoadFileList(string folderPath)
         {
-            treeView.Nodes.Clear();
-            DirectoryInfo dirInfo = new DirectoryInfo(folderPath);
-            TreeNode treeNode = treeView.Nodes.Add(dirInfo.Name);
-            treeNode.Tag = dirInfo.FullName;
-            treeNode.StateImageIndex = 0;
-            treeView.CheckBoxes = true;
-            
-            // load files
-            LoadFiles(folderPath, treeNode, fileType);
-            LoadSubDirectories(folderPath, treeNode, fileType);
+            // int: ID, string: name
+            FileList.Clear();
+            // latest one comes first, display all file types, since the server will rename some files if there is a duplicates. 
+            List<FileInfo> sortedFileList = new DirectoryInfo(folderPath).GetFiles("*.*", SearchOption.AllDirectories).OrderByDescending(f => f.LastWriteTime).ToList();
+
+            CreateDataTableGrid(sortedFileList);
+
+            Console.WriteLine("Count {0}", sortedFileList.Count);
         }
 
-        private void LoadFiles(string dir, TreeNode treeNode, string fileType)
+        private void CreateDataTableGrid(List<FileInfo> sortedFileList)
         {
-            string[] files = Directory.GetFiles(dir, fileType);
+            DataViewRemote.Columns.Clear();
+            DataViewRemote.DataSource = null;
 
-            foreach(string file in files)
+            if (sortedFileList.Count == 0)
             {
-                FileInfo fileInfo = new FileInfo(file);
-                TreeNode newNode = treeNode.Nodes.Add(fileInfo.Name);
-                newNode.Tag = fileInfo.FullName;
-                newNode.StateImageIndex = 1;
+                return;
             }
-        }
 
-        private void LoadSubDirectories(string subFolderPath, TreeNode treeNode, string fileType)
-        {
-            string[] subDirectoryEntries = Directory.GetDirectories(subFolderPath);
-            foreach(string subDirectory in subDirectoryEntries)
+            DataViewRemote.AutoGenerateColumns = true;
+            DataViewRemote.AllowUserToResizeColumns = true;
+            DataViewRemote.AllowUserToResizeRows = false;
+            DataViewRemote.AllowUserToOrderColumns = false;
+           
+            DataViewRemote.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.DisplayedCells);
+
+            DataGridViewCheckBoxColumn chk = new DataGridViewCheckBoxColumn();
+            DataViewRemote.Columns.Add(chk);
+            chk.Width = 5;
+            chk.HeaderText = "Select";
+            chk.Name = "chk";
+            chk.FillWeight = 20;
+            chk.Selected = false;
+
+            DataGridViewTextBoxColumn NameColumn = new DataGridViewTextBoxColumn();
+            NameColumn.HeaderText = "Name";
+            NameColumn.FillWeight = 60;
+            NameColumn.DataPropertyName = FILE_NAME;
+            DataViewRemote.Columns.Add(NameColumn);
+
+            DataGridViewTextBoxColumn LastWriteTimeColumn = new DataGridViewTextBoxColumn();
+            LastWriteTimeColumn.HeaderText = "Last Write Time";
+            LastWriteTimeColumn.FillWeight = 60;
+            LastWriteTimeColumn.ValueType = typeof(DateTime);
+            LastWriteTimeColumn.DataPropertyName = FILE_LAST_WRITE_DT;
+            DataViewRemote.Columns.Add(LastWriteTimeColumn);
+
+            DataGridViewTextBoxColumn LengthColumn = new DataGridViewTextBoxColumn();
+            LengthColumn.HeaderText = "Size";
+            LengthColumn.FillWeight = 30;
+            LengthColumn.DataPropertyName = FILE_SIZE;
+            DataViewRemote.Columns.Add(LengthColumn);
+
+            DataGridViewTextBoxColumn FullPathColumn = new DataGridViewTextBoxColumn();
+            FullPathColumn.HeaderText = "Full Path";
+            FullPathColumn.FillWeight = 60;
+            FullPathColumn.DataPropertyName = FILE_FULL_PATH;
+            // dataViewRemote.Columns[FULL_PATH_INDEX].Visible = false;
+            DataViewRemote.Columns.Add(FullPathColumn);
+
+            foreach (DataGridViewColumn c in DataViewRemote.Columns)
+                c.SortMode = DataGridViewColumnSortMode.NotSortable;
+
+
+            DataTable dt = new DataTable();
+
+            // Must match with the Data Property Name
+            dt.Columns.Add(FILE_NAME);
+            dt.Columns.Add(FILE_LAST_WRITE_DT);
+            dt.Columns.Add(FILE_SIZE);
+            dt.Columns.Add(FILE_FULL_PATH);
+
+            /*
+            dt.Columns.Add();
+            dt.Columns.Add();
+            dt.Columns.Add();
+            dt.Columns.Add();
+            */
+            foreach (FileInfo f in sortedFileList)
             {
-                DirectoryInfo dirInfo = new DirectoryInfo(subDirectory);
-                TreeNode newNode = treeNode.Nodes.Add(dirInfo.Name);
-                newNode.StateImageIndex = 0;
-                newNode.Tag = dirInfo.FullName;
-                LoadFiles(subDirectory, newNode, fileType);
-                LoadSubDirectories(subDirectory, newNode, fileType);
+                DataRow dr = dt.NewRow();
+                dr[NAME_INDEX] = f.Name;
+                dr[LAST_WRITE_INDEX] = f.LastWriteTime;
+                dr[FILE_SIZE_INDEX] = String.Format("{0:0.0#} KB", (f.Length / 1024));
+                dr[FULL_PATH_INDEX] = f.FullName;
+                
+                dt.Rows.Add(dr);
+                log.WriteLine("Adding file: {0}", f.Name);
             }
+          
+            DataViewRemote.DataSource = dt;
         }
         #endregion
 
@@ -276,7 +335,7 @@ namespace JIRASupport
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             //richtxtActivity.Text += JIRAFolderOpener.Properties.Resources.Txt_File_Refreshing + "\n";
-            //dataViewRemote.DataSource = null;
+            DataViewRemote.DataSource = null;
             if (isServerFolderOpen)
             {
                 Task RefreshServer = RefreshServerAndDownload();
@@ -298,7 +357,7 @@ namespace JIRASupport
                 });
             }
             else
-                LoadFileList(targetFolder);
+                LoadFileList(jiraDirectory);
 
             UpdateActivityMessage(JIRASupport.Properties.Resources.Txt_File_Updated);
         }
@@ -318,7 +377,7 @@ namespace JIRASupport
 
                 List<FileStruct> newFiles = client.ListDirectoryDetails(FTPParameters.ServerSettings.ServerPublicIncomingFolderPath);
 
-                if (newFiles!= null && newFiles.Count > 0)
+                if ( newFiles.Count > 0 ) // ListDirectoryDetails initializes the List<>
                 {
                     UpdateActivityMessage("Start downloading files ...");
                     client.DownloadFilesFromServer(newFiles);
@@ -338,12 +397,12 @@ namespace JIRASupport
                 backgroundWorker.CancelAsync();
             richtxtActivity.Text = "";
             backgroundWorker.RunWorkerAsync();
-            // resetEvent.WaitOne();
-            //dataViewRemote.Enabled = false;
+           // resetEvent.WaitOne();
+            DataViewRemote.Enabled = false;
             btnStart.Enabled = false;
             btnCancel.Enabled = false;
             ckbDecode.Enabled = false;
-            ckbUnzip.Enabled = false;   
+            ckbUnzip.Enabled = false;
         }
 
         private void btnSwitch_Click(object sender, EventArgs e)
@@ -353,7 +412,7 @@ namespace JIRASupport
                 groupBoxFolder.Text = JIRASupport.Properties.Resources.Txt_Switch_Server;
                 btnSwitch.Text = JIRASupport.Properties.Resources.Txt_Switch_Local;
                 btnSwitch.TextAlign = ContentAlignment.MiddleCenter;
-                fileList.Clear();
+                FileList.Clear();
                 LoadFileList(LocalFilePath.SourceFilePath);
                 isServerFolderOpen = true;
             }
@@ -362,8 +421,8 @@ namespace JIRASupport
                 groupBoxFolder.Text = JIRASupport.Properties.Resources.Txt_Switch_Local;
                 btnSwitch.Text = JIRASupport.Properties.Resources.Txt_Switch_Server;
                 btnSwitch.TextAlign = ContentAlignment.MiddleCenter;
-                fileList.Clear();
-                LoadFileList(targetFolder);
+                FileList.Clear();
+                LoadFileList(jiraDirectory);
                 isServerFolderOpen = false;
             }
             btnRestore.Visible = !isServerFolderOpen;
@@ -373,9 +432,6 @@ namespace JIRASupport
         private void btnMergeFiles_Click(object sender, EventArgs e)
         {
             // Reload folder
-            LoadFileList(targetFolder, "*.log");
-            canMergeFiles = true;
-            
         }
 
         private void setDefaultEditorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -403,44 +459,77 @@ namespace JIRASupport
         #region Data View Remote
         private void AddorRemoveItem(string fileName)
         {
-            FileList<string> tempFileList;
-            if(canMergeFiles)
-            {
-                tempFileList = filesToMerge;
-            }
-            else
-            {
-                tempFileList = fileList;
-            }
-
-            if (tempFileList.Find(file => file.Equals(fileName)) != null)
+            if (FileList.Find(file => file.Equals(fileName)) != null)
             {
                 Console.WriteLine("Remove from the list {0}", fileName);
-                tempFileList.Remove(fileName);
+                FileList.Remove(fileName);
             }
             else
             {
                 Console.WriteLine("Add into the list {0}", fileName);
-                tempFileList.Add(fileName);
+                FileList.Add(fileName);
             }
         }
 
-        private void tvFileView_AfterCheck(object sender, TreeViewEventArgs e)
+        private void dataView_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            Console.WriteLine(e.Node.Text);
-            string nodePath = e.Node.FullPath;
-            if(!isServerFolderOpen)
+            try
             {
-                string topText = (sender as TreeView).TopNode.FullPath;
-                // remove toptext from the node.fullpath 
-                // Node.FullPath = \EP-3956\tes....
-                // need to remove the \EP-3956 from the path
-                nodePath = nodePath.Remove(0, topText.Length+1); // remove the \
+                if (DataViewRemote.CurrentCell is DataGridViewCheckBoxCell)
+                {
+                    int row = e.RowIndex;
+                    if (row >= 0)
+                    {
+                        // check the check box value
+                        string fileFullName = DataViewRemote.Rows[row].Cells[FULL_PATH_INDEX + 1].Value.ToString();
+                        if (DataViewRemote.Rows[row].Cells[NAME_INDEX].Value != null)
+                        {
+                            if ((bool)DataViewRemote.Rows[row].Cells[NAME_INDEX].Value == false)
+                            {
+                                DataViewRemote.Rows[row].Cells[NAME_INDEX].Value = true;
+                                Console.WriteLine("Add {0}", fileFullName);                                
+                            }
+                            else
+                            {
+                                DataViewRemote.Rows[row].Cells[NAME_INDEX].Value = false;
+                                Console.WriteLine("remove {0}", fileFullName);
+                            }
+                        }
+                        else
+                        {
+                            DataViewRemote.Rows[row].Cells[NAME_INDEX].Value = true;
+                            Console.WriteLine("Add {0} ---- null cell", fileFullName);
+                        }
+                        AddorRemoveItem(fileFullName);
+                    }
+                }
+                Console.WriteLine("not a check box");
             }
-            AddorRemoveItem(nodePath);
+            catch (System.Exception ex)
+            {
+                Console.WriteLine("Exception: {0}", ex.Message);
+                return;
+            }
         }
 
-        #endregion
+        private void dataView_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int row = e.RowIndex;
+            if (row >= 0)
+            {
+                DataViewRemote.Rows[row].Selected = true;
+            }
+        }
+
+        private void dataView_CellMouseLeave(object sender, DataGridViewCellEventArgs e)
+        {
+            int row = e.RowIndex;
+            if (row >= 0)
+            {
+                DataViewRemote.Rows[row].Selected = false;
+            }
+        }
+#endregion
 
         private void richtxtActivity_TextChanged(object sender, EventArgs e)
         {
@@ -469,7 +558,7 @@ namespace JIRASupport
             {
                 files.Filter = "Enabler Database File |*.*|*.dmp";
                 files.Title = "Select a Enabler Database";
-                files.InitialDirectory = this.targetFolder;
+                files.InitialDirectory = this.jiraDirectory;
                 DialogResult result = files.ShowDialog();
                 
                 if(result == DialogResult.OK)
@@ -594,48 +683,6 @@ namespace JIRASupport
             CheckDelForm.Show(this);
         }
 
-        private void tvFileView_MouseMove(object sender, MouseEventArgs e)
-        {
-            TreeNode node = this.treeView.GetNodeAt(e.X, e.Y);
-
-            if(node != null && node.Tag != null)
-            {
-                if (node.Tag.ToString() != this.toolTips.GetToolTip(this.treeView))
-                    this.toolTips.SetToolTip(this.treeView, node.Tag.ToString());
-            }
-            else
-            {
-                this.toolTips.SetToolTip(this.treeView, "");
-            }
-        }
-
-        private void MergeFiles()
-        {
-            canMergeFiles = false;
-            if (fileList.Count == 0)
-                return;
-
-            string dirPath = Path.GetDirectoryName(fileList[0]);
-
-            // TODO: Update the Order function, need to order by last write time
-            // FileList<string> sortedFiles = fileList.OrderByDescending()
-
-            using (StreamWriter writer = new StreamWriter(Path.Combine(dirPath, "temp.log"), true))
-            {
-                foreach (string file in fileList)
-                {
-                    using (StreamReader reader = new StreamReader(file))
-                    {
-                        while(reader.EndOfStream)
-                        {
-                            writer.WriteLine(reader.ReadLine());
-                        }
-                    }
-                }
-            }
-            
-            
-        }
+       
     }
-
 }

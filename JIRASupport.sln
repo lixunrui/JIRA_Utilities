@@ -5,22 +5,22 @@ VisualStudioVersion = 15.0.28307.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JIRASupport", "JIRASupport.csproj", "{C61607FE-2689-4193-83A6-138DA89D2FDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JIRASupport.Test", "..\JIRASupport.Test\JIRASupport.Test.csproj", "{663AFC51-DB73-42B1-9B7D-44589EF7D7BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug_Test|Any CPU = Debug_Test|Any CPU
 		Debug|Any CPU = Debug|Any CPU
-		JIRA|Any CPU = JIRA|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Debug_Test|Any CPU.ActiveCfg = Debug_Test|Any CPU
-		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Debug_Test|Any CPU.Build.0 = Debug_Test|Any CPU
 		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C61607FE-2689-4193-83A6-138DA89D2FDD}.JIRA|Any CPU.ActiveCfg = JIRA|Any CPU
-		{C61607FE-2689-4193-83A6-138DA89D2FDD}.JIRA|Any CPU.Build.0 = JIRA|Any CPU
 		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C61607FE-2689-4193-83A6-138DA89D2FDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{663AFC51-DB73-42B1-9B7D-44589EF7D7BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{663AFC51-DB73-42B1-9B7D-44589EF7D7BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{663AFC51-DB73-42B1-9B7D-44589EF7D7BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{663AFC51-DB73-42B1-9B7D-44589EF7D7BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

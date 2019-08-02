@@ -1,6 +1,6 @@
 ﻿namespace JIRASupport
 {
-    partial class FileManager
+    partial class DownloadFormByDataTable
     {
         /// <summary>
         /// Required designer variable.
@@ -29,15 +29,15 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FileManager));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DownloadFormByDataTable));
             this.btnCancel = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
+            this.DataViewRemote = new System.Windows.Forms.DataGridView();
             this.ckbDecode = new System.Windows.Forms.CheckBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.statusProgress = new System.Windows.Forms.ToolStripProgressBar();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.groupBoxFolder = new System.Windows.Forms.GroupBox();
-            this.treeView = new System.Windows.Forms.TreeView();
             this.btnMergeFiles = new System.Windows.Forms.Button();
             this.btnRestore = new System.Windows.Forms.Button();
             this.lblFileCount = new System.Windows.Forms.Label();
@@ -54,6 +54,7 @@
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setDefaultEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            ((System.ComponentModel.ISupportInitialize)(this.DataViewRemote)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.groupBoxFolder.SuspendLayout();
             this.groupBoxActivity.SuspendLayout();
@@ -81,6 +82,24 @@
             this.btnStart.Text = "Start";
             this.btnStart.UseVisualStyleBackColor = true;
             this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            // 
+            // dataViewRemote
+            // 
+            this.DataViewRemote.AllowUserToAddRows = false;
+            this.DataViewRemote.AllowUserToDeleteRows = false;
+            this.DataViewRemote.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DataViewRemote.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.DataViewRemote.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DataViewRemote.Location = new System.Drawing.Point(0, 46);
+            this.DataViewRemote.Name = "dataViewRemote";
+            this.DataViewRemote.ReadOnly = true;
+            this.DataViewRemote.Size = new System.Drawing.Size(584, 300);
+            this.DataViewRemote.TabIndex = 3;
+            this.DataViewRemote.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataView_CellContentClick);
+            this.DataViewRemote.CellMouseLeave += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataView_CellMouseLeave);
+            this.DataViewRemote.CellMouseMove += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataView_CellMouseMove);
             // 
             // ckbDecode
             // 
@@ -122,7 +141,6 @@
             this.groupBoxFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxFolder.Controls.Add(this.treeView);
             this.groupBoxFolder.Controls.Add(this.btnMergeFiles);
             this.groupBoxFolder.Controls.Add(this.btnRestore);
             this.groupBoxFolder.Controls.Add(this.lblFileCount);
@@ -134,18 +152,6 @@
             this.groupBoxFolder.TabIndex = 7;
             this.groupBoxFolder.TabStop = false;
             this.groupBoxFolder.Text = "Server Folder";
-            // 
-            // treeView
-            // 
-            this.treeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.treeView.Location = new System.Drawing.Point(12, 19);
-            this.treeView.Name = "treeView";
-            this.treeView.Size = new System.Drawing.Size(560, 300);
-            this.treeView.TabIndex = 5;
-            this.treeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.tvFileView_AfterCheck);
-            this.treeView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.tvFileView_MouseMove);
             // 
             // btnMergeFiles
             // 
@@ -295,7 +301,7 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // FileManager
+            // FilePicker
             // 
             this.AcceptButton = this.btnStart;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -306,13 +312,15 @@
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.ckbDecode);
+            this.Controls.Add(this.DataViewRemote);
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.groupBoxFolder);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "FileManager";
-            this.Text = "File Manager";
+            this.Name = "FilePicker";
+            this.Text = "File Picker";
+            ((System.ComponentModel.ISupportInitialize)(this.DataViewRemote)).EndInit();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.groupBoxFolder.ResumeLayout(false);
@@ -329,6 +337,7 @@
 
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.Button btnStart;
+        private System.Windows.Forms.DataGridView DataViewRemote;
         private System.Windows.Forms.CheckBox ckbDecode;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripProgressBar statusProgress;
@@ -350,6 +359,5 @@
         private System.Windows.Forms.Button btnRestore;
         private System.Windows.Forms.ToolStripMenuItem checkDeliveryToolStripMenuItem;
         private System.Windows.Forms.Button btnMergeFiles;
-        private System.Windows.Forms.TreeView treeView;
     }
 }

@@ -7,8 +7,9 @@ using System.Windows.Forms;
 
 namespace JIRASupport
 {
-    public partial class MainForm1 : Form
+    public partial class MainForm : Form
     {
+        #region Import Dlls
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
 
@@ -17,97 +18,67 @@ namespace JIRASupport
 
         [DllImport("user32.dll")]
         static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
+        #endregion
 
-        private KeyHandler openFolderHotKey;
-
-        private KeyHandler downloadFileHotKey;
-
-        private KeyHandler windowOnTopHotKey;
-
-        private HotKeyController KeyController;
+        private JIRASupport.Utilities.Utilities utilities;
 
         private IntPtr currentActiveWindow;
 
-        private System.Windows.Forms.NotifyIcon notifyIcon1;
+        private System.Windows.Forms.NotifyIcon notifyIcon;
 
-        bool allowVisible;
+        bool canViewMainForm;
 
-        string targetPath;
+        string JIRADirectory;
 
-        bool registerStatus = false;
-
-        FilePicker filePicker; // only one instance is allowed, otherwise, some odd errors will happen
-        FileManager fileManager;
+        //DownloadForm downloadForm; // only one instance is allowed, otherwise, some odd errors will happen
+        DownloadFormByDataTable downloadForm;
         YLog log;
 
-        public MainForm1()
+        public MainForm()
         {
+            // Auto code
             InitializeComponent();
 
             log = new YLog("JIRA");
 
+            utilities = new Utilities.Utilities();
+
+            LogLine(utilities.testString);
+
+            if(utilities.FtpConnectionStatus == false)
+            {
+                LogLine("Unable to read xml");
+            }
+            utilities.MessagerEvent += UtilitiesMessagerEvent;
+
             DisplayVersion();
 
-            allowVisible = false;
+            // by default, the form is hidden
+            canViewMainForm = false;
 
             this.components = new System.ComponentModel.Container();
 
-            KeyController = new HotKeyController();
+            RegisterHotKeys();
 
             GenerateIcon();
-            
-            // Open folder only
-            openFolderHotKey = new KeyHandler(Constants.ALT + Constants.SHIFT, Keys.F, this.Handle);
-
-            KeyController.AddHotKey(openFolderHotKey);
-
-            // Open folder and the application
-            downloadFileHotKey = new KeyHandler(Constants.ALT + Constants.SHIFT, Keys.D, this.Handle);
-
-            KeyController.AddHotKey(downloadFileHotKey);
-
-            windowOnTopHotKey = new KeyHandler(Constants.ALT + Constants.SHIFT, Keys.T, this.Handle);
-
-            KeyController.AddHotKey(windowOnTopHotKey);
-
-            KeyController.RegisterHotKeyEvent += KeyController_RegisterHotKeyEvent;
-
-            KeyController.RegisterHotKey();
-
-            lblVersion.Text = Assembly.GetEntryAssembly().GetName().Version.ToString();
-
-            // loads everything on startup
-            FTPParameters.LoadServerInfoFromFile();
-
 
             //TODO: Testing watcher function
             DirectoryWatcher watcher = new DirectoryWatcher("C:\\Enabler\\log", log);
-            watcher.EnableWatcher = true;
-
-#if TEST
-            RunTest();
-#endif
+            // TODO:
+            // watcher.EnableWatcher = true;
         }
 
         #region HotKey Register and Function
-        void KeyController_RegisterHotKeyEvent(KeyHandler key, RegisterType type)
+        private void RegisterHotKeys()
         {
-            string buttonText = "Start";
-            if (type == RegisterType.ADD)
-            {
-                buttonText = "Stop";
-                WriteLine("Hotkey registered.");
-                registerStatus = true;
-            }
-            else if (type == RegisterType.REMOVEALL)
-            {
-                WriteLine("Hotkey unregistered.");
-                registerStatus = false;
-            }
-                
+            bool buttonVisible = true;
+            buttonVisible &= utilities.AddHotKey(Constants.ALT + Constants.SHIFT, Keys.F, this.Handle);
+            buttonVisible &= utilities.AddHotKey(Constants.ALT + Constants.SHIFT, Keys.D, this.Handle);
+            buttonVisible &= utilities.AddHotKey(Constants.ALT + Constants.SHIFT, Keys.T, this.Handle);
+
             this.BeginInvoke((Action)(() =>
             {
-                btnStart.Text = buttonText;
+                btnRegister.Enabled = buttonVisible;
             }));
         }
 
@@ -124,8 +95,8 @@ namespace JIRASupport
              MOD_WIN0x0008 Either WINDOWS key was held down. 
              * 
              * These keys are labeled with the Windows logo. 
-             * Hotkeys that involve the Windows key are reserved for use by the operating system.
- */
+             * Hot keys that involve the Windows key are reserved for use by the operating system.
+            */
 
             if (m.Msg == Constants.WM_HOTKEY_MSG_ID)
             {
@@ -137,11 +108,12 @@ namespace JIRASupport
                 {
                     if (keys == Convert.ToInt32(Keys.F))
                     {
-                        HandleHotKey();
+                        OpenFolder();
                     }
                     else if (keys == Convert.ToInt32(Keys.D))
                     {
-                        HandleHotKey(true);
+                        OpenFolder();
+                        ShowFileDialog();
                     }
                     else if (keys == Convert.ToInt32(Keys.T))
                     {
@@ -150,16 +122,6 @@ namespace JIRASupport
                 }
             }
             base.WndProc(ref m);
-        }
-
-        private void HandleHotKey(bool download = false)
-        {
-            OpenFolder();
-
-            if (download)
-            {
-                ShowFilePicker();
-            }
         }
 
         private void SetWindowsOnTop()
@@ -172,7 +134,7 @@ namespace JIRASupport
             if (GetWindowText(currentActiveWindow, buff, nChars) > 0)
             {
                 returnString = buff.ToString();
-                WriteLine("Windows Title is {0}", returnString);
+                LogLine("Windows Title is {0}", returnString);
             }
             else if (returnString == null)
             {
@@ -180,14 +142,14 @@ namespace JIRASupport
                 if (GetWindowText(currentActiveWindow, buff, nChars) > 0)
                 {
                     returnString = buff.ToString();
-                    WriteLine("Windows Title is {0}", returnString);
+                    LogLine("Windows Title is {0}", returnString);
                 }
             }
             
             if(returnString  == null)
             {
-                WriteLine("Cannot find Foreground Window");
-                WriteLine(Form.ActiveForm.Text);
+                LogLine("Cannot find Foreground Window");
+                LogLine(Form.ActiveForm.Text);
             }
 
             if (returnString != null)
@@ -200,6 +162,20 @@ namespace JIRASupport
             }
         }
 
+        // true to make the control visible; otherwise, false.
+        protected override void SetVisibleCore(bool value)
+        {
+            if (!canViewMainForm)
+            {
+                value = false;
+                if (!this.IsHandleCreated)
+                {
+                    CreateHandle();
+                }
+            }
+            base.SetVisibleCore(value);
+        }
+
         private string GetActiveWindowsTitle()
         {
             const int nChars = 256;
@@ -210,11 +186,11 @@ namespace JIRASupport
             if (GetWindowText(currentActiveWindow, buff, nChars) > 0)
             {
                 returnString = buff.ToString(); 
-                WriteLine("Windows Title is {0}", returnString);
+                LogLine("Windows Title is {0}", returnString);
             }
             else
             {
-                WriteLine("Cannot find Foreground Window");
+                LogLine("Cannot find Foreground Window");
             }
             //currentActiveWindow = GetActiveWindow();
             //if (GetWindowText(currentActiveWindow, buff, nChars) > 0)
@@ -231,17 +207,17 @@ namespace JIRASupport
         #region Create Icon and Click Events
         private void GenerateIcon()
         {
-            notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
+            notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
 
-            notifyIcon1.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
+            notifyIcon.Icon = Icon.ExtractAssociatedIcon(Assembly.GetExecutingAssembly().Location);
 
-            notifyIcon1.DoubleClick += notifyIcon1_DoubleClick;
+            notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
 
-            notifyIcon1.Visible = true;
+            notifyIcon.Visible = true;
 
-            notifyIcon1.Text = "JIRA Support Tool";
+            notifyIcon.Text = "JIRA Support Tool";
 
-            notifyIcon1.ContextMenu = GenerateIconMenu();
+            notifyIcon.ContextMenu = GenerateIconMenu();
         }
 
         private ContextMenu GenerateIconMenu()
@@ -289,7 +265,7 @@ namespace JIRASupport
 
         void ShowFileList_Click(object sender, EventArgs e)
         {
-            ShowFilePicker();
+            ShowFileDialog();
         }
 
         void OpenFolder_Click(object sender, EventArgs e)
@@ -297,9 +273,9 @@ namespace JIRASupport
             OpenFolder();
         }
 
-        void notifyIcon1_DoubleClick(object sender, EventArgs e)
+        void NotifyIcon_DoubleClick(object sender, EventArgs e)
         {
-            allowVisible = true;
+            canViewMainForm = true;
             this.Show();
             this.WindowState = FormWindowState.Normal;
             txtJiraCaseNum.Focus();
@@ -310,18 +286,16 @@ namespace JIRASupport
         #region Button Click Event
         void Exit_Click(object sender, EventArgs e)
         {
-            KeyController.UnregisterAllHotKey();
+            utilities.RemoveHotKey();
             this.Close();
         }
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            if (registerStatus)
-            {
-                KeyController.UnregisterAllHotKey();
-            }
-            else
-                KeyController.RegisterHotKey();
+            // unregister all keys first
+            utilities.RemoveHotKey();
+
+            RegisterHotKeys();
         }
 
         private void btnOpen_Click(object sender, EventArgs e)
@@ -331,78 +305,51 @@ namespace JIRASupport
 
             FileOperator.OpenFile(caseNumStr, out caseNumStr);
 
-            txtJiraCaseNum.Text = "";
+            txtJiraCaseNum.Clear();
         }
         #endregion
 
         #region Actions
-        private void ShowFilePicker()
+        private void ShowFileDialog()
         {
-            if (targetPath == null)
-            {
-                FileOperator.OpenFile(URLExtractor.GetJIRANumberFromURL(), out targetPath);
-                if (targetPath == null)
-                {
-                    MessageBox.Show("Folder location invalid", "No JIRA # found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-            }
-            /*
-            if (filePicker == null)
-            {
-                filePicker = new FilePicker(targetPath, log);//, fileoperator);
-                //filePicker.TopMost = true;
-                filePicker.FormClosing += filePicker_FormClosing;
-                
-                filePicker.Show(this);
-                filePicker.Activate();
-            }
-            */
-            if (fileManager == null)
-            {
-                fileManager = new FileManager(targetPath, log);//, fileoperator);
-                //filePicker.TopMost = true;
-                fileManager.FormClosing += filePicker_FormClosing;
+            JIRADirectory = utilities.GetTargetPath();
+            //if (downloadForm == null)
+            //{
+                //downloadForm = new DownloadForm(JIRADirectory, log);//, fileoperator);
+            downloadForm = new DownloadFormByDataTable(JIRADirectory, log);
+            //}
+            //else
+            //{
+            //    // Only update the folder
+            //    downloadForm.JIRADirectory = JIRADirectory;
+            //}
 
-                fileManager.Show(this);
-                fileManager.Activate();
-            }
-        }
-
-        void filePicker_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            filePicker = null;
-            fileManager = null;
+            downloadForm.Show(this);
+            downloadForm.Activate();
         }
 
         private void OpenFolder()
         {
             string caseNum = URLExtractor.GetJIRANumberFromURL();
-            if (caseNum == "" || caseNum == null)
+            if (caseNum == null)
             {
-                WriteLine("No JIRA case found");
+                LogLine("No JIRA case found");
                 MessageBox.Show("Folder location invalid", "No JIRA # found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            caseNum = caseNum.Substring(1, caseNum.Length - 2);
-            WriteLine("Found case #: {0}", caseNum);
-            FileOperator.OpenFile(caseNum, out targetPath);
+
+            LogLine("Found case #: {0}", caseNum);
+            FileOperator.OpenFile(caseNum, out JIRADirectory);
         }
         #endregion     
 
-        #region Form Event
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        #region Event
+        private void ClosingMainFormEvent(object sender, FormClosingEventArgs e)
         {
-            KeyController.UnregisterAllHotKey();
-            //this.Close();
+            utilities.RemoveHotKey();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            KeyController.RegisterHotKey();
-        }
-
-        private void Form1_Resize(object sender, EventArgs e)
+        private void ResizeMainFormEvent(object sender, EventArgs e)
         {
             FireIconNotification(this.WindowState, "Minimize to Tray App", "Form Minimized");
         }
@@ -410,61 +357,46 @@ namespace JIRASupport
         // to be used by other operations
         private void FireIconNotification(FormWindowState state, string titleMsg, string textmsg)
         {
-            notifyIcon1.BalloonTipTitle = titleMsg;
-            notifyIcon1.BalloonTipText = textmsg;
+            notifyIcon.BalloonTipTitle = titleMsg;
+            notifyIcon.BalloonTipText = textmsg;
 
             if (FormWindowState.Minimized == this.WindowState)
             {
-                notifyIcon1.Visible = true;
-                notifyIcon1.ShowBalloonTip(1000);
+                notifyIcon.Visible = true;
+                notifyIcon.ShowBalloonTip(1000);
                 this.Hide();
             }
             else if (FormWindowState.Normal == this.WindowState)
             {
-                notifyIcon1.Visible = false;
+                notifyIcon.Visible = false;
+            }
+        }
+
+        private void UtilitiesMessagerEvent(MessageType msgType, string message)
+        {
+            LogLine(message);
+            if (msgType == MessageType.ERROR)
+            {
+                FireIconNotification(this.WindowState, "Error", message);
             }
         }
         #endregion
-
-        // true to make the control visible; otherwise, false.
-        protected override void SetVisibleCore(bool value)
-        {
-            if (!allowVisible)
-            {
-                value = false;
-                if (!this.IsHandleCreated)
-                {
-                    CreateHandle();
-                }
-            }
-            base.SetVisibleCore(value);
-        }
 
         #region Support Functions
         private void DisplayVersion()
         {
-            WriteLine("Version: {0}",Application.ProductVersion);
+            lblVersion.Text = Assembly.GetEntryAssembly().GetName().Version.ToString();
+            LogLine("Version: {0}", Application.ProductVersion);
         }
 
-        private void WriteLine(string text, params string[] args)
+        private void LogLine(string message, params string[] args)
         {
-            WriteLine(String.Format(text, args));
-        }
+            if (args.Length > 0)
+                message = String.Format(message, args);
 
-        private void WriteLine(string text)
-        {
-            text = DateTime.Now + " " + text;
-            txtMsg.Text += text + Environment.NewLine;
-            log.WriteLine(text);
-        }
-        #endregion
-
-
-        #region Test Function
-        public void RunTest()
-        {
-            MeterCheckForm testCheckDelForm = new MeterCheckForm("C:\\Enabler\\Log", log);
-            testCheckDelForm.ShowDialog();
+            log.WriteLine(message);
+            message = DateTime.Now + " " + message;
+            txtMsg.Text += message + Environment.NewLine;
         }
         #endregion
     }

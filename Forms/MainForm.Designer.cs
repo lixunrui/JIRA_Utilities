@@ -1,6 +1,6 @@
 ﻿namespace JIRASupport
 {
-    partial class MainForm1
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.txtMsg = new System.Windows.Forms.RichTextBox();
-            this.btnStart = new System.Windows.Forms.Button();
+            this.btnRegister = new System.Windows.Forms.Button();
             this.txtJiraCaseNum = new System.Windows.Forms.TextBox();
             this.btnOpen = new System.Windows.Forms.Button();
             this.lblVersion = new System.Windows.Forms.Label();
@@ -46,16 +46,16 @@
             this.txtMsg.TabIndex = 0;
             this.txtMsg.Text = "";
             // 
-            // btnStart
+            // btnRegister
             // 
-            this.btnStart.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnStart.Location = new System.Drawing.Point(0, 0);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(284, 23);
-            this.btnStart.TabIndex = 1;
-            this.btnStart.Text = "Start";
-            this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            this.btnRegister.Dock = System.Windows.Forms.DockStyle.Top;
+            this.btnRegister.Location = new System.Drawing.Point(0, 0);
+            this.btnRegister.Name = "btnRegister";
+            this.btnRegister.Size = new System.Drawing.Size(284, 23);
+            this.btnRegister.TabIndex = 1;
+            this.btnRegister.Text = "Register Keys";
+            this.btnRegister.UseVisualStyleBackColor = true;
+            this.btnRegister.Click += new System.EventHandler(this.btnStart_Click);
             // 
             // txtJiraCaseNum
             // 
@@ -89,7 +89,7 @@
             this.lblVersion.Text = "version";
             this.lblVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // MainForm1
+            // MainForm
             // 
             this.AcceptButton = this.btnOpen;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -98,15 +98,14 @@
             this.Controls.Add(this.lblVersion);
             this.Controls.Add(this.btnOpen);
             this.Controls.Add(this.txtJiraCaseNum);
-            this.Controls.Add(this.btnStart);
+            this.Controls.Add(this.btnRegister);
             this.Controls.Add(this.txtMsg);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "MainForm1";
+            this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "JIRA Assistance";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.Resize += new System.EventHandler(this.Form1_Resize);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ClosingMainFormEvent);
+            this.Resize += new System.EventHandler(this.ResizeMainFormEvent);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -115,7 +114,7 @@
         #endregion
 
         private System.Windows.Forms.RichTextBox txtMsg;
-        private System.Windows.Forms.Button btnStart;
+        private System.Windows.Forms.Button btnRegister;
         private System.Windows.Forms.TextBox txtJiraCaseNum;
         private System.Windows.Forms.Button btnOpen;
         private System.Windows.Forms.Label lblVersion;
