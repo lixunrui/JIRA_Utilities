@@ -71,10 +71,10 @@ namespace JIRASupport
         #region HotKey Register and Function
         private void RegisterHotKeys()
         {
-            bool buttonVisible = true;
-            buttonVisible &= utilities.AddHotKey(Constants.ALT + Constants.SHIFT, Keys.F, this.Handle);
-            buttonVisible &= utilities.AddHotKey(Constants.ALT + Constants.SHIFT, Keys.D, this.Handle);
-            buttonVisible &= utilities.AddHotKey(Constants.ALT + Constants.SHIFT, Keys.T, this.Handle);
+            bool buttonVisible = true; 
+            buttonVisible &= utilities.AddHotKey((int)Constants.ConstantKeys.ALT + (int)Constants.ConstantKeys.SHIFT, Keys.F, this.Handle);
+            buttonVisible &= utilities.AddHotKey((int)Constants.ConstantKeys.ALT + (int)Constants.ConstantKeys.SHIFT, Keys.D, this.Handle);
+            buttonVisible &= utilities.AddHotKey((int)Constants.ConstantKeys.ALT + (int)Constants.ConstantKeys.SHIFT, Keys.T, this.Handle);
 
             this.BeginInvoke((Action)(() =>
             {
@@ -98,13 +98,13 @@ namespace JIRASupport
              * Hot keys that involve the Windows key are reserved for use by the operating system.
             */
 
-            if (m.Msg == Constants.WM_HOTKEY_MSG_ID)
+            if (m.Msg == (int)Constants.ConstantKeys.WM_HOTKEY_MSG_ID)
             {
                 // find out which key(s) is (are) pressed
                 int keys = m.LParam.ToInt32() >> 16;
                 int systemKeys = m.LParam.ToInt32() & 0xFF;
-                if ((systemKeys & Constants.SHIFT) == Constants.SHIFT
-                    && (systemKeys & Constants.ALT) == Constants.ALT)
+                if ((systemKeys & (int)Constants.ConstantKeys.SHIFT) == (int)Constants.ConstantKeys.SHIFT
+                    && (systemKeys & (int)Constants.ConstantKeys.ALT) == (int)Constants.ConstantKeys.ALT)
                 {
                     if (keys == Convert.ToInt32(Keys.F))
                     {
@@ -316,7 +316,7 @@ namespace JIRASupport
             //if (downloadForm == null)
             //{
                 //downloadForm = new DownloadForm(JIRADirectory, log);//, fileoperator);
-            downloadForm = new DownloadFormByDataTable(JIRADirectory, log);
+            downloadForm = new DownloadFormByDataTable(JIRADirectory, utilities, log);
             //}
             //else
             //{

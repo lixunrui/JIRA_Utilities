@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using System.IO.Compression;
 using System.Threading;
 
 
@@ -21,7 +18,9 @@ namespace JIRASupport
         AutoResetEvent resetEvent = new AutoResetEvent(false);
         bool isServerFolderOpen = true;
         bool openWithEditor = false;
+        bool hasDumpFile = false;
         YLog log;
+        private Utilities.Utilities utilities;
 
         public string JIRADirectory
         {
@@ -39,11 +38,12 @@ namespace JIRASupport
         const string FILE_SIZE = "Size";
         const string FILE_FULL_PATH = "Path";
 
-        public DownloadFormByDataTable(string JIRADirectory, YLog log)//, FileOperator fileOperator)
+        public DownloadFormByDataTable(string JIRADirectory, Utilities.Utilities utilities, YLog log)//, FileOperator fileOperator)
         {
             InitializeComponent();
             InitComponents();
             this.CenterToScreen();
+            this.utilities = utilities;
             this.log = log;
             this.jiraDirectory = JIRADirectory;
             // set form title
@@ -72,6 +72,17 @@ namespace JIRASupport
                 btnRestore.Visible = false;
                 btnRestore.Enabled = false;
             }
+        }
+
+        void UpdateButtonStatus(string folderPath)
+        {
+            btnMergeFiles.Enabled = false;
+            btnRestore.Enabled = false;
+            // check if dmp files available
+
+            List<FileInfo> tempList = utilities.GetFiles(folderPath, FileType.DUMP_FILE);
+            if(tempList.Count > 0)
+                btnRestore.Enabled = true;
         }
 
         void FileListChangeEvent(int fileCount, bool hasZipFile)
@@ -138,12 +149,12 @@ namespace JIRASupport
             backgroundWorker.ReportProgress(0, "Start");
             foreach (string fileName in FileList)
             {
+                FileInfo tempFileInfo = new FileInfo(fileName);
                 if (isServerFolderOpen)
                 {
-                    FileInfo tempFileInfo = new FileInfo(fileName);
                     // targetFolder is null
                     string destFile = Path.Combine(jiraDirectory, tempFileInfo.Name); // \\appserv\EP\EP-XXX\Enabler.XXX
-                    string sourceFile = Path.Combine(LocalFilePath.SourceFilePath, fileName); // \\appserv\incoming\ENabler.XXX or \\appserv\Logs\EX-####
+                    string sourceFile = Path.Combine(LocalFilePath.SourceFilePath, tempFileInfo.Name); // \\appserv\incoming\ENabler.XXX or \\appserv\Logs\EX-####
                     Console.WriteLine("Done copy");
 
                     System.IO.File.Copy(tempFileInfo.FullName, destFile, true);
@@ -153,7 +164,8 @@ namespace JIRASupport
 
                 if (ckbUnzip.Checked)
                 {
-                    FileOperator.UnZipFile(jiraDirectory, fileName);
+                    log.WriteLine("Start unzipping file {0}", Path.Combine(jiraDirectory, tempFileInfo.Name)) ;
+                    FileOperator.UnZipFile(jiraDirectory, tempFileInfo.Name);
                 }
                 
                 // check whether we need to decode
@@ -224,12 +236,14 @@ namespace JIRASupport
 
         #region Create UI Table
         // Load Remote folder (P:\) files
-        private void LoadFileList(string folderPath)
+        private void LoadFileList(string folderPath, string extension="*.*")
         {
             // int: ID, string: name
             FileList.Clear();
             // latest one comes first, display all file types, since the server will rename some files if there is a duplicates. 
-            List<FileInfo> sortedFileList = new DirectoryInfo(folderPath).GetFiles("*.*", SearchOption.AllDirectories).OrderByDescending(f => f.LastWriteTime).ToList();
+            List<FileInfo> sortedFileList = utilities.GetFilesByLastWriteTime(folderPath, extension, SearchOption.AllDirectories);
+
+            UpdateButtonStatus(folderPath);
 
             CreateDataTableGrid(sortedFileList);
 
@@ -357,7 +371,7 @@ namespace JIRASupport
                 });
             }
             else
-                LoadFileList(jiraDirectory);
+                LoadFileList(jiraDirectory, FileType.ZIP_DMP_FILE);
 
             UpdateActivityMessage(JIRASupport.Properties.Resources.Txt_File_Updated);
         }
@@ -422,11 +436,11 @@ namespace JIRASupport
                 btnSwitch.Text = JIRASupport.Properties.Resources.Txt_Switch_Server;
                 btnSwitch.TextAlign = ContentAlignment.MiddleCenter;
                 FileList.Clear();
-                LoadFileList(jiraDirectory);
+                LoadFileList(jiraDirectory, FileType.ZIP_DMP_FILE);
                 isServerFolderOpen = false;
             }
             btnRestore.Visible = !isServerFolderOpen;
-            btnRestore.Enabled = false; // !isServerFolderOpen;
+            //btnRestore.Enabled = false; // !isServerFolderOpen;
         }
 
         private void btnMergeFiles_Click(object sender, EventArgs e)
@@ -554,7 +568,7 @@ namespace JIRASupport
         {
             string filePath = string.Empty;
             // open a dialog for selecting the database
-            using (var files = new OpenFileDialog())
+           /* using (var files = new OpenFileDialog())
             {
                 files.Filter = "Enabler Database File |*.*|*.dmp";
                 files.Title = "Select a Enabler Database";
@@ -565,6 +579,12 @@ namespace JIRASupport
                 {
                     filePath = files.FileName;
                 }
+            }
+            */
+
+            foreach(string file in FileList)
+            {
+                // check if this is a dump file, and only use the first one to restore.
             }
 
             // copy the database and add the rename mapping into a text file

@@ -10,15 +10,25 @@ namespace JIRASupport
 {
     public static class Constants
     {
-        //modifiers
-        public const int NOMOD = 0x0000;
-        public const int ALT = 0x0001;
-        public const int CTRL = 0x0002;
-        public const int SHIFT = 0x0004;
-        public const int WIN = 0x0008;
+        public enum ConstantKeys
+        {
+            NOMOD   = 0x0000,
+            ALT     = 0x0001,
+            CTRL    = 0x0002,   
+            SHIFT   = 0x0004,
+            WIN     = 0x0008,
+            WM_HOTKEY_MSG_ID    = 0x0312,
+        }
 
-        //windows message id for hot key
-        public const int WM_HOTKEY_MSG_ID = 0x0312;
+        public static string[] strConstantKeys = new string[] 
+        {
+            "NOMODE",
+            "ALT",
+            "CTRL",
+            "SHIFT",
+            "WIN",
+            "WM_HOTKEY_MSG_ID"
+        };
     }
 
     public class KeyHandler
@@ -37,12 +47,14 @@ namespace JIRASupport
         int id;
         int modifier;
 
+        public string Key { get => key.ToString(); }
+
         bool _registered;
         public bool Registered
         {
             get { return _registered; }
         }
-        public event EventHandler RegisterChanged;
+        public event EventHandler RegisterChanged; // not used
 
         public KeyHandler(int modifier, Keys key, IntPtr Handle)
         {
@@ -70,8 +82,6 @@ namespace JIRASupport
         public bool Register()
         {
             bool registered = false;
-
-          //  UnregisterHotKey(hWnd, id);
             
             registered = RegisterHotKey(hWnd, id, modifier, key);
 

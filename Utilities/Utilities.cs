@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace JIRASupport.Utilities
@@ -18,7 +21,6 @@ namespace JIRASupport.Utilities
 
         public Utilities()
         {
-            
             KeyController = new HotKeyController();
             KeyController.RegisterHotKeyEvent += KeyController_RegisterHotKeyEvent;
             // loads everything on startup
@@ -59,14 +61,48 @@ namespace JIRASupport.Utilities
         #region Events
         private void KeyController_RegisterHotKeyEvent(KeyHandler key, RegisterStatus type)
         {
-            if (type == RegisterStatus.SUCCESS)
+            string registerMsg = string.Empty;
+            switch(type)
             {
-                MessagerEvent?.Invoke(MessageType.MESSAGE ,"Register hot keys succeed.");
+                case RegisterStatus.FAILURE:
+                    registerMsg = string.Format("Register hot keys {0} failed.", key.Key.ToString());
+                    break;
+                case RegisterStatus.SUCCESS:
+                    registerMsg = string.Format("Register hot keys {0} succeed.", key.Key.ToString());
+                    break;
+                case RegisterStatus.UNREGISTERED:
+                    registerMsg = string.Format("Unregister hot keys {0} succeed.", key.Key.ToString());
+                    break;
+                case RegisterStatus.UNREGISTER_FAILED:
+                    registerMsg = string.Format("Unregister hot keys {0} failed.", key.Key.ToString());
+                    break;
             }
-            else if (type == RegisterStatus.FAILURE)
+            MessagerEvent?.Invoke(MessageType.MESSAGE, registerMsg);
+        }
+        #endregion
+
+        #region file operation
+        public List<FileInfo> GetFilesByLastWriteTime(string folderPath, string searchPattern, SearchOption searchOption)
+        {
+            List<FileInfo> fileList = GetFiles(folderPath, searchPattern, searchOption);
+
+            fileList = fileList.OrderByDescending(f => f.LastWriteTime).ToList();
+
+            return fileList;
+        }
+
+        public List<FileInfo> GetFiles(string folderPath, string searchPattern, SearchOption searchOption = SearchOption.AllDirectories)
+        {
+            List<FileInfo> fileList = new List<FileInfo>();
+
+            string[] searchPatterns = searchPattern.Split('|');
+
+            foreach (string sp in searchPatterns)
             {
-                MessagerEvent?.Invoke(MessageType.MESSAGE, "Register hot keys failed.");
+                List<FileInfo> tempFileList = new DirectoryInfo(folderPath).GetFiles(sp, searchOption).ToList();
+                fileList.AddRange(tempFileList);
             }
+            return fileList;
         }
         #endregion
     }

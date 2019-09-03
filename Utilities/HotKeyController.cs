@@ -10,6 +10,8 @@ namespace JIRASupport
     {
         SUCCESS,
         FAILURE,
+        UNREGISTERED,
+        UNREGISTER_FAILED
     }
 
     public class HotKeyController
@@ -26,9 +28,9 @@ namespace JIRASupport
 
             if (key.Registered)
                 _keyRegistered = true;
-
-            _keyRegistered = key.Register();
-
+            else
+                _keyRegistered = key.Register();
+            
             if(_keyRegistered)
             {
                 RegisterHotKeyEvent?.Invoke(key, RegisterStatus.SUCCESS);
@@ -71,22 +73,18 @@ namespace JIRASupport
         public void UnregisterAllHotKey()
         {
             // unregister 
-            bool stateChange = false;
+            
             foreach (KeyHandler key in hotKeys)
             {
                 if (!key.Registered)
                     continue;
 
-                key.Unregiser();
-                stateChange = true;
+                bool result = key.Unregiser();
+
+                RegisterHotKeyEvent?.Invoke(key, result? RegisterStatus.UNREGISTERED:RegisterStatus.UNREGISTER_FAILED);
             }
 
-            //hotKeys.Clear();
-
-            if (RegisterHotKeyEvent != null && stateChange)
-            {
-                RegisterHotKeyEvent(null, RegisterStatus.FAILURE);
-            }
+            hotKeys.Clear();
         }
 
 

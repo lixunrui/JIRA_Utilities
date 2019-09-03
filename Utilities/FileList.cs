@@ -4,15 +4,6 @@ using System.IO;
 
 namespace JIRASupport
 {
-    internal static class FileTypes
-    {
-        static internal List<string> ZipFileTypes = new List<string>() 
-            {
-                ".zip",
-                ".rar"
-            };
-    }
-    
     internal class FileList<T> : List<T>
     {
         internal delegate void FileChange(int fileCount, bool hasZipFile);
@@ -67,7 +58,7 @@ namespace JIRASupport
            
             try
             {
-                foreach (string zipFileExt in FileTypes.ZipFileTypes)
+                foreach (string zipFileExt in FileType.ZipFileTypes)
                 {
                     item = Find(file => Path.GetExtension(Convert.ToString(file)).ToLower() == zipFileExt);
                     if (item != null)

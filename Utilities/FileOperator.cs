@@ -42,14 +42,20 @@ namespace JIRASupport
             if (filename != null)
             {
                 string fileExt = Path.GetExtension(filename).ToLower();
-                IEnumerable<string> matchItem = FileTypes.ZipFileTypes.Where(ext => ext == fileExt);
-                if (matchItem.Count() > 0)
+                IEnumerable<string> matchItem = FileType.ZipFileTypes.Where(ext => ext == fileExt);
+
+                bool hasZipfile = FileType.ZipFileTypes.Contains(fileExt);
+                //if (matchItem.Count() > 0)
+                if(hasZipfile)
                 {
                     try
                     {
-                        SendEvent(String.Format("Unzipping {0}", filename), OperationStatus.MESSAGE);
+                        string sourceFileName = Path.Combine(folder, filename);
+                        string targetFileName = Path.Combine(folder, filename.Substring(0, filename.Length - 4));
 
-                        ZipFile.ExtractToDirectory(Path.Combine(folder, filename), Path.Combine(folder, filename.Substring(0, filename.Length - 4)));
+                        SendEvent(String.Format("Unzipping {0} from {1} to {2}", filename, sourceFileName, targetFileName), OperationStatus.MESSAGE);
+
+                        ZipFile.ExtractToDirectory(sourceFileName, targetFileName);
 
                         UnZipFile(Path.ChangeExtension(Path.Combine(folder, filename), null), null);
                     }
@@ -61,9 +67,14 @@ namespace JIRASupport
 
                     SendEvent(null, OperationStatus.END);
                 }
+                else
+                {
+                    SendEvent(string.Format("{0} not an zip file", fileExt), OperationStatus.MESSAGE);
+                }
             }
             else
             {
+                SendEvent( string.Format("Checking {0} for any zip file", folder), OperationStatus.MESSAGE);
                 DirectoryInfo directory = new DirectoryInfo(folder);
                 DirectoryInfo[] subDir = directory.GetDirectories();
                 if (subDir.Length != 0)
@@ -86,6 +97,12 @@ namespace JIRASupport
 
         public static void DecodeFiles(string folder)
         {
+            if(!Directory.Exists(folder))
+            {
+                SendEvent(string.Format("{0} doesn't exist", folder), OperationStatus.MESSAGE);
+                return;
+            }
+
             string[] allLogs = Directory.GetFiles(folder, "*.log", SearchOption.AllDirectories);
 
             Console.WriteLine("Found {0} logs", allLogs.Length);
@@ -100,8 +117,9 @@ namespace JIRASupport
 
             foreach (string log in allLogs)
             {
-                process.StartInfo.Arguments = log;
-                SendEvent(String.Format("Decoding: {0}", log), OperationStatus.MESSAGE);
+                string newLogName = string.Format("\"{0}\"", log);
+                process.StartInfo.Arguments = newLogName;
+                SendEvent(String.Format("Decoding: {0}", newLogName), OperationStatus.MESSAGE);
                 process.Start();
 
                 process.WaitForExit();
